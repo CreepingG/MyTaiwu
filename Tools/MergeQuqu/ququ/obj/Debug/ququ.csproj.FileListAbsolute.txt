@@ -1,0 +1,7 @@
+C:\Users\gshtony\source\repos\ququ\ququ\bin\Debug\ququ.exe.config
+C:\Users\gshtony\source\repos\ququ\ququ\bin\Debug\ququ.exe
+C:\Users\gshtony\source\repos\ququ\ququ\bin\Debug\ququ.pdb
+C:\Users\gshtony\source\repos\ququ\ququ\obj\Debug\ququ.csprojAssemblyReference.cache
+C:\Users\gshtony\source\repos\ququ\ququ\obj\Debug\ququ.csproj.CoreCompileInputs.cache
+C:\Users\gshtony\source\repos\ququ\ququ\obj\Debug\ququ.exe
+C:\Users\gshtony\source\repos\ququ\ququ\obj\Debug\ququ.pdb
