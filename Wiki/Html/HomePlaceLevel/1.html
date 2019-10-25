@@ -1,0 +1,996 @@
+<!doctype html>
+<head>
+	<link rel="stylesheet" href="style.css" type="text/css" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<!--移动端适配-->
+	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+		<!--开发用，发布时使用"https://cdn.jsdelivr.net/npm/vue@2.6.0"-->
+		<!--vue使用ES5特性，故不支持IE8及以下版本-->
+	<script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+	
+	<link rel="stylesheet" href="https://cdn.huijiwiki.com/taiwu/load.php?debug=false&amp;lang=zh-cn&amp;modules=ext.echo.badgeicons%7Cext.echo.styles.badge%7Cext.visualEditor.desktopArticleTarget.noscript%7Cmediawiki.action.edit.styles%7Cmediawiki.legacy.commonPrint%2Cshared%7Cmediawiki.sectionAnchor%7Cmediawiki.ui.button%7Cmediawiki.widgets.styles%7Coojs-ui-core.styles%7Coojs-ui.styles.icons-alerts%2Cicons-content%2Cicons-interactions%2Cindicators%2Ctextures%7Cskins.bootstrapmediawiki.top&amp;only=styles&amp;skin=bootstrapmediawiki"/>
+	<link rel="stylesheet" href="https://cdn.huijiwiki.com/taiwu/load.php?debug=false&amp;lang=zh-cn&amp;modules=ext.smw.style%7Cext.smw.tooltip.styles&amp;only=styles&amp;skin=bootstrapmediawiki"/>
+	<link rel="stylesheet" href="https://cdn.huijiwiki.com/taiwu/load.php?debug=false&amp;lang=zh-cn&amp;modules=ext.wikiEditor.styles&amp;only=styles&amp;skin=bootstrapmediawiki"/>
+	<script async="" src="https://cdn.huijiwiki.com/taiwu/load.php?debug=false&amp;lang=zh-cn&amp;modules=startup&amp;only=scripts&amp;skin=bootstrapmediawiki"></script>
+	<link rel="stylesheet" href="https://cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.min.css"/>
+	<meta name="ResourceLoaderDynamicStyles" content=""/>
+	<link rel="stylesheet" href="https://cdn.huijiwiki.com/taiwu/load.php?debug=false&amp;lang=zh-cn&amp;modules=ext.gadget.tbui-nav-pills&amp;only=styles&amp;skin=bootstrapmediawiki"/>
+	<link rel="stylesheet" href="https://cdn.huijiwiki.com/taiwu/load.php?debug=false&amp;lang=zh-cn&amp;modules=site.styles&amp;only=styles&amp;skin=bootstrapmediawiki"/>
+</head>
+<body>
+	<div id="wiki-outer-body" class='huiji-css-hook'>
+		<div id="wiki-body" class="container">
+			<div id="home-place-level">
+				<div style="display: flex;flex-flow:row wrap-reverse;align-items:center;justify-content:center;">
+					<input type="range" v-bind:min="min" v-bind:max="max" v-model.number="value" style="flex: 1 0 auto"/>
+					<div class="ctrl-group">
+						<button type="button" @click="change(-1)">&minus;</button>
+						<input type="text" v-bind:value="value" @input="getInput" 
+							style="width:50px; font-size:1.3em; text-align:center;"/>
+						<button type="button" @click="change(1)">+</button>
+					</div>
+				</div>
+				<div class="table-responsive">
+					<table class="wikitable home-place-level">
+						<tbody>
+							<tr>
+								<th>升级消耗</th>
+								<th>累计消耗</th>
+								<th>研读耐心</th>
+							</tr>
+							<tr>
+								<td data-v-html="v1"></td>
+								<td data-v-html="v2"></td>
+								<td data-v-html="v3"></td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<ol class="data-list" style="display:none">
+					<li>
+						<div data-key="v1">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>50</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>300</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>150</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>570</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">800</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">500</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v2">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>50</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>300</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>150</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>570</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">800</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">500</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v3">+5</div>
+					</li>
+					<li>
+						<div data-key="v1">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>50</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>330</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>160</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>620</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">880</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">550</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v2">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>100</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>630</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>310</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>1190</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">1680</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">1050</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v3">+10</div>
+					</li>
+					<li>
+						<div data-key="v1">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>60</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>360</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>180</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>680</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">960</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">600</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v2">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>160</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>990</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>490</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>1870</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">2640</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">1650</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v3">+15</div>
+					</li>
+					<li>
+						<div data-key="v1">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>60</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>390</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>190</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>740</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">1040</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">650</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v2">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>220</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>1380</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>680</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>2610</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">3680</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">2300</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v3">+20</div>
+					</li>
+					<li>
+						<div data-key="v1">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>70</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>420</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>210</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>790</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">1120</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">700</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v2">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>290</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>1800</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>890</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>3400</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">4800</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">3000</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v3">+25</div>
+					</li>
+					<li>
+						<div data-key="v1">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>70</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>450</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>220</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>850</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">1200</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">750</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v2">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>360</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>2250</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>1110</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>4250</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">6000</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">3750</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v3">+30</div>
+					</li>
+					<li>
+						<div data-key="v1">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>80</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>480</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>240</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>910</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">1280</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">800</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v2">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>440</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>2730</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>1350</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>5160</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">7280</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">4550</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v3">+35</div>
+					</li>
+					<li>
+						<div data-key="v1">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>80</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>510</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>250</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>960</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">1360</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">850</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v2">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>520</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>3240</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>1600</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>6120</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">8640</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">5400</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v3">+40</div>
+					</li>
+					<li>
+						<div data-key="v1">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>90</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>540</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>270</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>1020</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">1440</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">900</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v2">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>610</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>3780</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>1870</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>7140</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">10080</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">6300</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v3">+45</div>
+					</li>
+					<li>
+						<div data-key="v1">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>90</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>570</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>280</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>1080</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">1520</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">950</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v2">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>700</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>4350</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>2150</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>8220</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">11600</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">7250</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v3">+50</div>
+					</li>
+					<li>
+						<div data-key="v1">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>100</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>600</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>300</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>1140</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">1600</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">1000</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v2">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>800</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>4950</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>2450</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>9360</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">13200</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">8250</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v3">+55</div>
+					</li>
+					<li>
+						<div data-key="v1">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>100</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>630</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>310</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>1190</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">1680</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">1050</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v2">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>900</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>5580</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>2760</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>10550</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">14880</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">9300</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v3">+60</div>
+					</li>
+					<li>
+						<div data-key="v1">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>110</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>660</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>330</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>1250</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">1760</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">1100</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v2">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>1010</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>6240</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>3090</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>11800</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">16640</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">10400</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v3">+65</div>
+					</li>
+					<li>
+						<div data-key="v1">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>110</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>690</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>340</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>1310</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">1840</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">1150</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v2">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>1120</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>6930</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>3430</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>13110</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">18480</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">11550</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v3">+70</div>
+					</li>
+					<li>
+						<div data-key="v1">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>120</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>720</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>360</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>1360</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">1920</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">1200</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v2">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>1240</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>7650</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>3790</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>14470</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">20400</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">12750</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v3">+75</div>
+					</li>
+					<li>
+						<div data-key="v1">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>120</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>750</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>370</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>1420</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">2000</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">1250</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v2">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>1360</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>8400</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>4160</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>15890</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">22400</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">14000</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v3">+80</div>
+					</li>
+					<li>
+						<div data-key="v1">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>130</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>780</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>390</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>1480</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">2080</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">1300</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v2">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>1490</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>9180</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>4550</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>17370</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">24480</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">15300</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v3">+85</div>
+					</li>
+					<li>
+						<div data-key="v1">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>130</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>810</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>400</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>1530</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">2160</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">1350</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v2">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>1620</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>9990</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>4950</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>18900</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">26640</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">16650</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v3">+90</div>
+					</li>
+					<li>
+						<div data-key="v1">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>140</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>840</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>420</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>1590</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">2240</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">1400</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v2">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>1760</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>10830</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>5370</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>20490</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">28880</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">18050</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v3">+95</div>
+					</li>
+					<li>
+						<div data-key="v1">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>140</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>870</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>430</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>1650</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">2320</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">1450</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v2">
+							<ul class="resource-list">
+								<li>
+									<img alt="食材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/9/9b/%E9%A3%9F%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">食材 <span>1900</span>
+								</li>
+								<li>
+									<img alt="木材 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/1/14/%E6%9C%A8%E6%9D%90_20.png" width="20" height="20" data-file-width="20" data-file-height="20">木材 <span>11700</span>
+								</li>
+								<li>
+									<img alt="金石 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/e/ee/%E9%87%91%E7%9F%B3_20.png" width="20" height="20" data-file-width="20" data-file-height="20">金石 <span>5800</span>
+								</li>
+								<li>
+									<img alt="织物 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/3/3d/%E7%BB%87%E7%89%A9_20.png" width="20" height="20" data-file-width="20" data-file-height="20">织物 <span>22140</span>
+								</li>
+								<li>
+									<img alt="银钱 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/0/06/%E9%93%B6%E9%92%B1_20.png" width="20" height="20" data-file-width="20" data-file-height="20">银钱 <span style="color:#E3C66D;">31200</span>
+								</li>
+								<li>
+									<img alt="威望 20.png" src="https://huiji-public.huijistatic.com/taiwu/uploads/5/5f/%E5%A8%81%E6%9C%9B_20.png" width="20" height="20" data-file-width="20" data-file-height="20">威望 <span style="color:#AE5AC8;">19500</span>
+								</li>
+							</ul>
+						</div>
+						<div data-key="v3">+100</div>
+					</li>
+				</ol>
+			</div>
+		</div>
+	</div>
+	<script src="script.js" type="text/javascript"></script>
+</body>
+</html>

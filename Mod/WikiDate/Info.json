@@ -1,0 +1,8 @@
+﻿{
+  "Id": "WikiDate",
+  "DisplayName": "wiki数据生成",
+  "Author": "东风有意",
+  "Version": "1.0.0",
+  "AssemblyName": "WikiDate.dll",
+  "EntryMethod": "WikiDate.Main.Load"
+}

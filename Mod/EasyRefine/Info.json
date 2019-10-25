@@ -1,0 +1,8 @@
+﻿{
+  "Id": "EasyRefine",
+  "DisplayName": "简化精制",
+  "Author": "东风有意",
+  "Version": "1.0.12",
+  "AssemblyName": "EasyRefine.dll",
+  "EntryMethod": "EasyRefine.Main.Load"
+}

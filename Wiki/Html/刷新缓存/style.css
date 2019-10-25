@@ -1,0 +1,6 @@
+#gongfa-magic > div {
+  display: flex;
+}
+#gongfa-magic > div > span {
+  margin-inline-start: 10px;
+}

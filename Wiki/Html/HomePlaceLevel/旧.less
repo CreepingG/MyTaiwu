@@ -1,0 +1,82 @@
+@size:30px;
+.sider(){ /*滑块*/
+    height: 25px;
+    width: 25px;
+    margin-top: -5px; /*使滑块超出轨道部分的偏移量相等*/
+    background: yellow; 
+    border-radius: 50%; /*外观设置为圆形*/
+    border: solid 0.125em rgba(205, 224, 230, 0.5); /*设置边框*/
+    box-shadow: 0 .125em .125em #3b4547; /*添加底部阴影*/
+}
+@trackRadius: 10px;
+@trackBackground: blue;
+@trackShadow: 0 1px 1px #def3f8, inset 0 .125em .125em #0d1112;
+@trackBorder: 0.2px solid #010101;
+.track(){/*轨道*/
+    height: 15px;
+    border-radius: @trackRadius; /*设为圆角的*/
+    background: @trackBackground;
+    box-shadow: @trackShadow; /*内置阴影效果*/
+    border: @trackBorder;
+}
+#home-place-level{
+	button{
+		width: @size;
+	    height: @size;
+	    font-size: 2em;
+	    line-height: @size/2;
+	    display: flex;
+	    justify-content: center;
+	}
+	input[type=range] { /*滑动条*/
+	    -webkit-appearance: none;
+	    min-width: 200px;
+	    margin: 20px 5px;
+	    border-radius: 10px; /*这个属性设置使填充进度条时的图形为圆角*/
+	    background: transparent; /* Otherwise white in Chrome */
+	    &:focus {
+		    outline: none;/*去除边框线*/
+		}
+		//滑块
+		&::-webkit-slider-thumb{
+			-webkit-appearance: none; /*去除原有样式*/
+			.sider();
+		}
+		&::-moz-range-thumb{
+			.sider();
+		}
+		&::-ms-thumb{
+			.sider();
+		}
+		//轨道
+		&::-webkit-slider-runnable-track{
+		    .track();
+		}
+		&::-moz-range-track{
+		    .track();
+		}
+		&::-ms-track {
+			width: 100%;
+			cursor: pointer;
+
+			/* Hides the slider so custom styles can be added */
+			background: transparent; 
+			border-color: transparent;
+			color: transparent;
+			
+		    .track();
+		}
+		&::-ms-fill-lower {
+		  background: @trackBackground;
+		  border: @trackBorder;
+		  border-radius: @trackRadius;
+		  box-shadow: @trackShadow;
+		}
+		&::-ms-fill-upper {
+		  background: @trackBackground;
+		  border: @trackBorder;
+		  border-radius: @trackRadius;
+		  box-shadow: @trackShadow;
+		}
+	}
+}

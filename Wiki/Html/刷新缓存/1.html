@@ -1,0 +1,73 @@
+<!doctype html>
+<head>
+	<link rel="stylesheet" href="style.css" type="text/css" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<!--移动端适配-->
+	<script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+	
+	<link rel="stylesheet" href="https://cdn.huijiwiki.com/taiwu/load.php?debug=false&amp;lang=zh-cn&amp;modules=ext.echo.badgeicons%7Cext.echo.styles.badge%7Cext.visualEditor.desktopArticleTarget.noscript%7Cmediawiki.action.edit.styles%7Cmediawiki.legacy.commonPrint%2Cshared%7Cmediawiki.sectionAnchor%7Cmediawiki.ui.button%7Cmediawiki.widgets.styles%7Coojs-ui-core.styles%7Coojs-ui.styles.icons-alerts%2Cicons-content%2Cicons-interactions%2Cindicators%2Ctextures%7Cskins.bootstrapmediawiki.top&amp;only=styles&amp;skin=bootstrapmediawiki"/>
+	<link rel="stylesheet" href="https://cdn.huijiwiki.com/taiwu/load.php?debug=false&amp;lang=zh-cn&amp;modules=ext.smw.style%7Cext.smw.tooltip.styles&amp;only=styles&amp;skin=bootstrapmediawiki"/>
+	<link rel="stylesheet" href="https://cdn.huijiwiki.com/taiwu/load.php?debug=false&amp;lang=zh-cn&amp;modules=ext.wikiEditor.styles&amp;only=styles&amp;skin=bootstrapmediawiki"/>
+	<script async="" src="https://cdn.huijiwiki.com/taiwu/load.php?debug=false&amp;lang=zh-cn&amp;modules=startup&amp;only=scripts&amp;skin=bootstrapmediawiki"></script>
+	<link rel="stylesheet" href="https://cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.min.css"/>
+	<meta name="ResourceLoaderDynamicStyles" content=""/>
+	<link rel="stylesheet" href="https://cdn.huijiwiki.com/taiwu/load.php?debug=false&amp;lang=zh-cn&amp;modules=ext.gadget.tbui-nav-pills&amp;only=styles&amp;skin=bootstrapmediawiki"/>
+	<link rel="stylesheet" href="https://cdn.huijiwiki.com/taiwu/load.php?debug=false&amp;lang=zh-cn&amp;modules=site.styles&amp;only=styles&amp;skin=bootstrapmediawiki"/>
+</head>
+<body>
+	<div id="wiki-outer-body" class='huiji-css-hook'>
+		<div id="wiki-body" class="container">
+			<div id="purge-api">
+				<input type="text" placeholder="页面名（带前缀）" value="" />
+				<button class="btn btn-primary" type="button">刷新缓存</button>
+				<div id="hint"></div>
+				<div id="url"></div>
+				<div id="result"></div>
+			</div>
+			<script type="text/javascript">
+				if (!('LoadScriptList' in window)) window.LoadScriptList = [];
+				window.LoadScriptList.push(function($){
+					function DoPost(url, postfix='', cnt=1, sum=0){
+						$('#purge-api > button').prop('disabled', true);
+						$('#purge-api > #hint').text(`执行第${cnt}次提交...`);
+						$('#purge-api > #url').text(url + postfix);
+						$.post(url + postfix,function(result){
+							const len = result.purge.length;
+							sum = sum + len;
+							$("#purge-api > #result").html(`得到${len}个结果，累计${sum}个。<br />` + JSON.stringify(result));
+							$('#purge-api > #hint').text(`执行完成`);
+							if ('continue' in result){
+								const ctn = result.continue;
+								const key = ctn.continue.split('|')[0];
+								const value = ctn[key];
+								const newPostFix = `&${key}=${value}`;
+								DoPost(url, newPostFix, cnt + 1, sum);
+							}
+							else {
+								$('#purge-api > button').prop('disabled', false);
+							}
+						});
+					}
+					
+					$('#purge-api > button').click(function(){
+						const name = $('#purge-api > input').val().replace('：',':');
+						if (name==''){
+							$('#purge-api > #hint').text(`页面名不可为空`);
+							return;
+						}
+						let generator = '';
+						if (name.startsWith('分类') || name.startsWith('Category') || name.startsWith('category')){
+							generator = 'generator=categorymembers&gcmtitle=' + name + '&gcmlimit=500';
+						}
+						else {
+							generator = 'generator=transcludedin&titles=' + name + '&gtilimit=500';
+						}
+						const url = `https:/${''}/taiwu.huijiwiki.com/api.php?action=purge&format=json&${generator}`;
+						DoPost(url);
+					});
+				});
+			</script>			
+		</div>
+	</div>
+</body>
+</html>

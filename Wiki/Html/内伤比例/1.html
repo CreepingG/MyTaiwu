@@ -1,0 +1,55 @@
+<!doctype html>
+<head>
+	<link rel="stylesheet" href="style.css" type="text/css" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<!--移动端适配-->
+	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+		<!--开发用，发布时使用"https://cdn.jsdelivr.net/npm/vue@2.6.0"-->
+		<!--vue使用ES5特性，故不支持IE8及以下版本-->
+	<script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+	
+	<link rel="stylesheet" href="https://cdn.huijiwiki.com/taiwu/load.php?debug=false&amp;lang=zh-cn&amp;modules=ext.echo.badgeicons%7Cext.echo.styles.badge%7Cext.visualEditor.desktopArticleTarget.noscript%7Cmediawiki.action.edit.styles%7Cmediawiki.legacy.commonPrint%2Cshared%7Cmediawiki.sectionAnchor%7Cmediawiki.ui.button%7Cmediawiki.widgets.styles%7Coojs-ui-core.styles%7Coojs-ui.styles.icons-alerts%2Cicons-content%2Cicons-interactions%2Cindicators%2Ctextures%7Cskins.bootstrapmediawiki.top&amp;only=styles&amp;skin=bootstrapmediawiki"/>
+	<link rel="stylesheet" href="https://cdn.huijiwiki.com/taiwu/load.php?debug=false&amp;lang=zh-cn&amp;modules=ext.smw.style%7Cext.smw.tooltip.styles&amp;only=styles&amp;skin=bootstrapmediawiki"/>
+	<link rel="stylesheet" href="https://cdn.huijiwiki.com/taiwu/load.php?debug=false&amp;lang=zh-cn&amp;modules=ext.wikiEditor.styles&amp;only=styles&amp;skin=bootstrapmediawiki"/>
+	<script async="" src="https://cdn.huijiwiki.com/taiwu/load.php?debug=false&amp;lang=zh-cn&amp;modules=startup&amp;only=scripts&amp;skin=bootstrapmediawiki"></script>
+	<link rel="stylesheet" href="https://cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.min.css"/>
+	<meta name="ResourceLoaderDynamicStyles" content=""/>
+	<link rel="stylesheet" href="https://cdn.huijiwiki.com/taiwu/load.php?debug=false&amp;lang=zh-cn&amp;modules=ext.gadget.tbui-nav-pills&amp;only=styles&amp;skin=bootstrapmediawiki"/>
+	<link rel="stylesheet" href="https://cdn.huijiwiki.com/taiwu/load.php?debug=false&amp;lang=zh-cn&amp;modules=site.styles&amp;only=styles&amp;skin=bootstrapmediawiki"/>
+</head>
+<body>
+	<div id="wiki-outer-body" class='huiji-css-hook'>
+		<div id="wiki-body" class="container">
+			<div id="gongfa-magic">
+				<div>
+					<span>武器名称：</span>
+					<input type="text" list="weapon-list" v-model="weaponName" />
+					<datalist id="weapon-list">
+						<option v-for="tuple in weaponList" v-bind:value="tuple.data0"></option>
+					</datalist>
+					<span>武器基础内伤比：{{weapon10}}</span>
+					<span>武器内功传导：{{weapon17}}</span>
+				</div>
+				<div>
+					<span>功法名称：</span>
+					<input type="text" list="gongfa-list" v-model="gongfaName" />
+					<datalist id="gongfa-list">
+						<option v-for="tuple in gongfaList" v-bind:value="tuple.data0"></option>
+					</datalist>
+					<span>功法基础提气比：{{gongfa8}}</span>
+				</div>
+				<div>
+					<span>人物内功发挥：</span>
+					<input type="tel" v-model.number="data1105" />
+				</div>
+				<ul>
+					<li>武器内伤比 = {{weaponText}}</li>
+					<li>功法内伤比 = {{gongfaText}}</li>
+					<li>最终内伤比 = {{finalText}}</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+	<script src="script.js" type="text/javascript"></script>
+</body>
+</html>
