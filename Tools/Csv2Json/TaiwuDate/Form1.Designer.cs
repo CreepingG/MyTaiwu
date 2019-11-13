@@ -45,7 +45,7 @@
             this.textBox1.Multiline = true;
             this.textBox1.Name = "textBox1";
             this.textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.textBox1.Size = new System.Drawing.Size(665, 449);
+            this.textBox1.Size = new System.Drawing.Size(662, 449);
             this.textBox1.TabIndex = 1;
             // 
             // textBox2
@@ -71,7 +71,7 @@
             // 
             this.OutputBtn.Location = new System.Drawing.Point(12, 278);
             this.OutputBtn.Name = "OutputBtn";
-            this.OutputBtn.Size = new System.Drawing.Size(101, 66);
+            this.OutputBtn.Size = new System.Drawing.Size(118, 102);
             this.OutputBtn.TabIndex = 7;
             this.OutputBtn.Text = "输出";
             this.OutputBtn.UseVisualStyleBackColor = true;

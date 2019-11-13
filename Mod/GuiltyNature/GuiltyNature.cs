@@ -1109,8 +1109,6 @@ namespace GuiltyNature
                     Util.ShowTips($"{name}的眼神似乎有点怪…");
                     return true;
                 }
-
-                faild:;
                 Losers.Add(actorId);
                 return false;
             }

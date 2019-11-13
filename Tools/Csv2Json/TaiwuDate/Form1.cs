@@ -11,19 +11,9 @@ using System.IO;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-//todo：将运功效果中的固定值和发挥效率合并
+
 namespace TaiwuDate
 {
-    struct Field
-    {
-        public int type;//0-不变 1-100倍 2-百分比
-        public string name;
-        public Field(string name, int type = 0)
-        {
-            this.name = name;
-            this.type = type;
-        }
-    }
     public partial class Form1 : Form
     {
         Dictionary<int, JObject> ById;
@@ -184,13 +174,13 @@ namespace TaiwuDate
 
         private void DragDrop1(object sender, DragEventArgs e)
         {
-            string path = ((System.Array)e.Data.GetData(DataFormats.FileDrop)).GetValue(0).ToString();
+            string path = ((Array)e.Data.GetData(DataFormats.FileDrop)).GetValue(0).ToString();
             Read(path);
         }
         private void DragEnter1(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
-                e.Effect = DragDropEffects.All; //重要代码：表明是所有类型的数据，比如文件路径
+            if (e.Data.GetDataPresent(DataFormats.FileDrop)) // 运行拖进来的是文件（而不是文本、图片之类的元素）
+                e.Effect = DragDropEffects.All; // 会改变拖动时的指针样式
             else e.Effect = DragDropEffects.None;
         }
 
@@ -200,12 +190,13 @@ namespace TaiwuDate
         {
             OutputBtn.Enabled = false;
             int cnt = 0;
+            Print("", false);
             foreach (JObject jo in All)
             {
                 int id = (int?)jo["id"]??0;
-                string fileName = ParseFileName($"Item/{id}.json");
+                string fileName = ParseFileName($"{System.IO.Path.GetFileNameWithoutExtension(Path).Split('_')[0]}/{id}.json");
                 string content = jo.ToString();
-                OutputBtn.Text = $"{++cnt} / {Length}\r\n{jo["pagename"]}\r\n{fileName}";
+                Print($"{++cnt} / {Length}    {jo["pagename"]}    {fileName}\r\n");
                 SaveToFile(fileName, content);
             }
             OutputBtn.Enabled = true;
@@ -213,11 +204,11 @@ namespace TaiwuDate
 
         void SaveToFile(string fileName, string massage, string folderName = "json")
         {
-            string dir = OutputDir;
+            /*string dir = OutputDir;
             if (folderName != "") dir += folderName + @"\";
             if (!System.IO.Directory.Exists(dir))//创建目录
-                System.IO.Directory.CreateDirectory(dir);
-            FileStream file = new FileStream(dir + fileName, FileMode.Create);
+                System.IO.Directory.CreateDirectory(dir);*/
+            FileStream file = new FileStream(fileName, FileMode.Create); //输出到exe所在目录
             if (file != null)
             {
                 byte[] data = System.Text.Encoding.Default.GetBytes(massage);

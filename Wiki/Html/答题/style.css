@@ -1,0 +1,29 @@
+#exam-body {
+  border: 1em black;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
+#exam-body > * {
+  margin: 20% auto;
+}
+#exam-body button {
+  outline: none;
+}
+#exam-body button.btn-choosed {
+  outline: #4d90fe auto 2px;
+  outline-offset: -1px;
+}
+#exam-body #problem {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+#exam-body #problem .process {
+  align-self: flex-end;
+}
+#exam-body .option-list > button {
+  display: inline-block;
+  margin: 2px;
+}
