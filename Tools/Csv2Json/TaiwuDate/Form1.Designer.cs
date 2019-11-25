@@ -83,7 +83,7 @@
             this.VERSION.Name = "VERSION";
             this.VERSION.Size = new System.Drawing.Size(100, 25);
             this.VERSION.TabIndex = 8;
-            this.VERSION.Text = "2.6.7";
+            this.VERSION.Text = "2.6.18";
             // 
             // Form1
             // 

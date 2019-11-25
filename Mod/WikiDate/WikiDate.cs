@@ -693,8 +693,8 @@ namespace WikiDate
         {
             return s.Replace("\n", "·");
 
-            var ss = s.Split('\n');
-            return ss[ss.Length - 1];
+            /*var ss = s.Split('\n');
+            return ss[ss.Length - 1];*/
         }
         public static string Color(string s, bool nocolor = false)
         {

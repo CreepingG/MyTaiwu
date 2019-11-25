@@ -407,7 +407,6 @@ namespace WindTest
             int hp = DateFile.instance.Hp(defenderId);
             int needDamage = maxHp - hp;
             int injuryPower = needDamage * 100 / injuryDate;
-            float mediumSize = 1.6f;
             int index = isActor ? DateFile.instance.actorBattlerIdDate.IndexOf(defenderId) : DateFile.instance.enemyBattlerIdDate.IndexOf(defenderId);
             var method = typeof(BattleSystem).GetMethod("AddBattleInjury",
                         BindingFlags.NonPublic | BindingFlags.Instance);

@@ -119,15 +119,18 @@ namespace TaiwuDate
                     }
                     else
                     {
-                        if (value != "Null") jo.Add(key, value);
+                        if (value != "Null" && value != "") jo.Add(key, value);
                     }
                 }
                 string name = Path.Contains("Item_Date") ? ItemName(jo) : (string)jo["data0"];
-                jo.Add("pageName", name);
+                if (Path.Contains("Item_Date"))
+                {
+                    jo.Add("pageName", name);
+                }
                 jo.Add("version", VERSION.Text);
                 All[row - 1] = jo;
                 ById[id] = jo;
-                ByName[name] = jo;
+                if (name != "" && name != null) ByName[name] = jo;
             }
             return;
         }

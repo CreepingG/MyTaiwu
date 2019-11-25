@@ -1,0 +1,50 @@
+<!DOCTYPE HTML>
+<html>
+<body>
+<a id="play" href="javascript:void(0)" onclick="CricketCall()">Play</a>
+<script>
+var CricketCall = (function(){
+	let audioData;
+	const URL = 'https://huiji-public.huijistatic.com/taiwu/uploads/a/a4/CrickertCall.wav';
+	const pitch = "100";
+	function playSound(speed, duration, loop=false) {
+	    /*
+	    因为自带的playbackRate只改变播放速度，不改变音高
+	    故采用AudioContext来同时改变音高&播放速度
+	    来源：https://stackoverflow.com/questions/25157513/javascript-pitch-shift-with-time-stretch
+	    */
+	    if (typeof(audioData)==='undefined'){
+			const request = new XMLHttpRequest();
+		    request.open('GET', URL, true);
+		    request.responseType = 'arraybuffer';
+		    request.onload = function() {
+		        audioData = request.response;
+		        playSound(speed, duration);
+		    }
+		    request.send();
+	    }
+	    else{
+		    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+		    const source = audioCtx.createBufferSource();
+		    const gainNode = audioCtx.createGain();
+		    audioCtx.decodeAudioData(audioData.slice(0), function(buffer) {
+		            songLength = buffer.duration;
+		            source.buffer = buffer;
+		            source.playbackRate.value = speed;
+		            source.connect(gainNode);
+		            gainNode.connect(audioCtx.destination);
+		            gainNode.gain.linearRampToValueAtTime(0, duration);
+		            source.loop = loop;
+					source.start(0,0,duration);
+		        },
+	        	function(e){"Error with decoding audio data" + e.error}
+	    	);
+	    }
+	}
+	return function(){
+		playSound(1.25-0.65*Number(pitch)/100, 1.6);
+	}
+})();
+</script>
+</body>
+</html>

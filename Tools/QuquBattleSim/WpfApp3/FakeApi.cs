@@ -26,7 +26,7 @@ class QuquData
     }
 }
 
-class Item:Dictionary<int, string>
+public class Item:Dictionary<int, int>
 {
     public static Dictionary<int, Item> Lib = new Dictionary<int, Item>();
 }
@@ -38,10 +38,10 @@ class Items
         if (!Item.Lib.ContainsKey(itemId))
         {
             Item.Lib.Add(itemId, new Item {
-                { 2001, "1" }
+                { 2001, 1 }
             });
         }
-        Item.Lib[itemId][key] = value;
+        Item.Lib[itemId][key] = value.ToInt();
     }
 }
 
@@ -49,60 +49,37 @@ class GetQuquWindow
 {
     static public GetQuquWindow instance = new GetQuquWindow();
 
-    public int GetQuquDate(int itemId, int index, bool injurys = true, bool attrAdd = true)
+    public int GetQuquDate(int colorId, int partId, int index)
     {
-        var item = Item.Lib[itemId];
-        var colorId = item[2002].ParseInt();
-        var partId = item[2003].ParseInt();
         int colorValue = QuquData.instance.Source[colorId][index].ParseInt();
         int partValue = (partId > 0) ? QuquData.instance.Source[partId][index].ParseInt() : 0;
         int result =  colorValue + partValue;
-        if (injurys)
-        {
-            string[] array = DateFile.instance.GetItemDate(itemId, 2004).Split('|');
-            for (int i = 0; i < array.Length; i++)
-            {
-                int injuryIndex = int.Parse(array[i]);
-                if (injuryIndex != 0 && injuryIndex == index)
-                {
-                    result = Mathf.Max(result * 30 / 100, result - ((index != 11 && index != 12) ? 1 : 5));
-                }
-            }
-        }
         return result;
     }
 
-    public void QuquAddInjurys(int itemId)
+    public QuquBattler MakeQuqu(int colorId, int partId)
     {
-        string itemDate = DateFile.instance.GetItemDate(itemId, 2004);
-        itemDate = ((Random.Range(0, 100) >= 35) ? (itemDate + "|" + (11 + Random.Range(0, 2))) : (itemDate + "|" + (21 + Random.Range(0, 3))));
-        Items.SetItemProperty(itemId, 2004, itemDate);
-    }
-
-    public void MakeQuqu(int itemId, int colorId, int partId)
-    {
-        Items.SetItemProperty(itemId, 2002, colorId.ToString());
-        Items.SetItemProperty(itemId, 2003, partId.ToString());
-        int maxHp = int.Parse(DateFile.instance.GetItemDate(itemId, 8)) + GetQuquDate(itemId, 11) / 20;
+        int maxHp = GetQuquDate(colorId, partId, 1) + GetQuquDate(colorId, partId, 11) / 20;
         maxHp += Random.Range(-(maxHp * 35 / 100), maxHp * 35 / 100 + 1);
-        Items.SetItemProperty(itemId, 902, maxHp.ToString());
-        Items.SetItemProperty(itemId, 901, maxHp.ToString());
-        Items.SetItemProperty(itemId, 2007, (GetQuquDate(itemId, 98) * Random.Range(0, 21) / 100).ToString());
+        var item = new Item
+        {
+            [2002] = colorId,
+            [2003] = partId,
+            [902] = maxHp,
+            [901] = maxHp,
+            [2007] = GetQuquDate(colorId, partId, 98) * Random.Range(0, 21) / 100,
+        };
+
+        var battler = QuquBattler.Create(item);
         for (int i = 0; i < Mathf.Min(3, maxHp - 1); i++)
         {
             if (Random.Range(0, 100) < 10)
             {
-                DateFile.instance.ChangeItemHp(DateFile.instance.MianActorID(), itemId, -1);
-                QuquAddInjurys(itemId);
+                battler.GetDamage(3, 1);
+                battler.GetDamage(4);
             }
         }
-    }
-
-    public int MakeQuqu(int colorId, int partId)
-    {
-        var itemId = Random.Int();
-        MakeQuqu(itemId, colorId, partId);
-        return itemId;
+        return battler;
     }
 }
 
@@ -123,23 +100,23 @@ class DateFile
         }
     }
 
-    public string GetItemDate(int id, int index, bool other = true)
+    public T GetItemDate<T>(Item item, int index, bool other = true)
     {
-        var item = Item.Lib[id];
-        string result = item.ContainsKey(index) ? item[index] : "0";
-        if (!other) return result;
-        if (GetItemDate(id, 2001, false) == "1")
+        int value = item.ContainsKey(index) ? item[index] : 0;
+        string result = "";
+        if (!other) return (T)Convert.ChangeType(value, typeof(T));
+        if (GetItemDate<int>(item, 2001, false) == 1)
         {
-            int colorId = item[2002].ToInt();
-            int partId = item[2003].ToInt();
+            int colorId = item[2002];
+            int partId = item[2003];
             var cricketDate = QuquData.instance.Source;
             switch (index)
             {
                 case 0:
-                    result = ((partId <= 0) ? cricketDate[colorId][0] : ((int.Parse(cricketDate[colorId][2]) >= int.Parse(cricketDate[partId][2])) ? (cricketDate[colorId][0].Split('|')[0] + cricketDate[partId][0]) : (cricketDate[partId][0] + cricketDate[colorId][0].Split('|')[1])));
+                    result = GetQuquName(colorId,partId);
                     break;
                 case 8:
-                    result = GetQuquWindow.instance.GetQuquDate(id, 1).ToString();
+                    value = GetQuquWindow.instance.GetQuquDate(colorId, partId, 1);
                     break;
                 case 98:
                     result = cricketDate[colorId][97];
@@ -148,44 +125,35 @@ class DateFile
                     result = ((partId > 0) ? cricketDate[partId][99] : cricketDate[colorId][99]);
                     break;
                 case 904:
-                    result = GetQuquWindow.instance.GetQuquDate(id, 94).ToString();
+                    value = GetQuquWindow.instance.GetQuquDate(colorId, partId, 94);
                     break;
                 case 905:
-                    result = GetQuquWindow.instance.GetQuquDate(id, 95).ToString();
+                    value = GetQuquWindow.instance.GetQuquDate(colorId, partId, 95);
                     break;
                 case 52001:
-                    result = GetQuquWindow.instance.GetQuquDate(id, index).ToString();
+                    value = GetQuquWindow.instance.GetQuquDate(colorId, partId, index);
                     break;
                 case 52002:
-                    result = GetQuquWindow.instance.GetQuquDate(id, index).ToString();
+                    value = GetQuquWindow.instance.GetQuquDate(colorId, partId, index);
                     break;
                 case 52003:
-                    result = GetQuquWindow.instance.GetQuquDate(id, index).ToString();
+                    value = GetQuquWindow.instance.GetQuquDate(colorId, partId, index);
                     break;
                 case 52004:
-                    result = GetQuquWindow.instance.GetQuquDate(id, index).ToString();
+                    value = GetQuquWindow.instance.GetQuquDate(colorId, partId, index);
                     break;
                 case 52005:
-                    result = GetQuquWindow.instance.GetQuquDate(id, index).ToString();
+                    value = GetQuquWindow.instance.GetQuquDate(colorId, partId, index);
                     break;
                 case 52006:
-                    result = GetQuquWindow.instance.GetQuquDate(id, index).ToString();
+                    value = GetQuquWindow.instance.GetQuquDate(colorId, partId, index);
                     break;
                 case 52007:
-                    result = GetQuquWindow.instance.GetQuquDate(id, index).ToString();
+                    value = GetQuquWindow.instance.GetQuquDate(colorId, partId, index);
                     break;
             }
         }
-        return result;
-    }
-
-    public void ChangeItemHp(int actorId, int itemId, int hpValue, int maxHpValue = 0, bool removeItem = true, int loseType = 1)
-    {
-        var item = Item.Lib[itemId];
-        int newMaxHp = Mathf.Max(0, int.Parse(GetItemDate(itemId, 902)) + maxHpValue);
-        int newHp = Mathf.Clamp(int.Parse(GetItemDate(itemId, 901)) + hpValue, 0, newMaxHp);
-        item[901] = newHp.ToString();
-        item[902] = newMaxHp.ToString();
+        return (T)Convert.ChangeType(result == "" ? (object)value : (object)result, typeof(T));
     }
 
     public int MianActorID() => 0;

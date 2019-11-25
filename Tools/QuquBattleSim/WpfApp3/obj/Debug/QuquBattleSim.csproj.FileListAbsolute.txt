@@ -13,3 +13,4 @@ D:\文档\GitHub\MyTaiwu\Tools\QuquBattleSim\WpfApp3\obj\Debug\QuquBattleSim.csp
 D:\文档\GitHub\MyTaiwu\Tools\QuquBattleSim\WpfApp3\obj\Debug\QuquBattleSim.csproj.CoreCompileInputs.cache
 D:\文档\GitHub\MyTaiwu\Tools\QuquBattleSim\WpfApp3\obj\Debug\WpfApp3.exe
 D:\文档\GitHub\MyTaiwu\Tools\QuquBattleSim\WpfApp3\obj\Debug\WpfApp3.pdb
+D:\文档\GitHub\MyTaiwu\Tools\QuquBattleSim\WpfApp3\obj\Debug\GeneratedInternalTypeHelper.g.cs

@@ -3,399 +3,186 @@ using System.Collections.Generic;
 
 public class QuQuBattleSimulation
 {
-    private QuquBattler[] _actorQuquBattlers;
+    private readonly QuquBattler[] battlers = new QuquBattler[2];
 
-    private QuquBattler[] _enemyQuquBattlers;
+    private int[] Count;
 
-    private int winTurn;
+    public static int 反击衰减 = 5;
+    
+    QuquBattler Single(int color, int part) => GetQuquWindow.instance.MakeQuqu(color, part);
 
-    private Queue<Action> nextStep;
-
-    private int turnCount;
-
-    private int attackCount;
-
-    public static int reAttackWeaken = 5;
-
-    /* 修改的部分 */
-    QuquBattler[] Single(int color, int part) => new QuquBattler[] { CreateQuquBattler(GetQuquWindow.instance.MakeQuqu(color, part)) };
-
-    public QuQuBattleSimulation(int color1, int part1, int color2, int part2)
+    public QuQuBattleSimulation(int color1, int part1, int color2, int part2, bool weaken)
     {
-        _actorQuquBattlers = Single(color1, part1);
-        _enemyQuquBattlers = Single(color2, part2);
+        battlers[0] = Single(color1, part1);
+        battlers[1] = Single(color2, part2);
+        反击衰减 = weaken ? 5 : 0;
     }
 
     public string Report()
     {
-        var name1 = DateFile.instance.GetItemDate(_actorQuquBattlers[0].QuquId, 0);
-        var name2 = DateFile.instance.GetItemDate(_enemyQuquBattlers[0].QuquId, 0);
+        var name1 = battlers[0].Name;
+        var name2 = battlers[1].Name;
         var result = ShowStartBattleState();
-        return $"{name1} vs {name2}, {(result == 1 ? name1 : name2)} wins\n turnCount:{turnCount}, attackCount:{attackCount}";
+        return $"{name1} vs {name2}, {(result.win ? name1 : name2)} 胜\n" +
+            $"计数：{Count[0]}, {Count[1]}, {Count[2]}\n" + 
+            $"结束状态\n" +
+            $"    {name1}：{battlers[0].PrintStatus()}\n" +
+            $"    {name2}：{battlers[1].PrintStatus()}\n";
     }
 
-    public int GetTrueResult()
+    public struct BattleResult
     {
-        return (_actorQuquBattlers[0].Hp > 0
-            && _actorQuquBattlers[0].Sp > 0
-            && DateFile.instance.GetItemDate(_actorQuquBattlers[0].QuquId, 901).ToInt() > 0)
-            ? 1 : 2;
-    }
-    /* 修改的部分 */
-
-    public QuQuBattleSimulation(int[] actor1Ququ, int[] actor2Ququ)
-    {
-        _actorQuquBattlers = new QuquBattler[actor1Ququ.Length];
-        _enemyQuquBattlers = new QuquBattler[actor2Ququ.Length];
-        for (int i = 0; i < 3; i++)
+        public bool win;
+        public QuquBattler.BattlerStatus status;
+        public BattleResult(bool win, QuquBattler.BattlerStatus status)
         {
-            int ququId = actor1Ququ[i];
-            int ququId2 = actor2Ququ[i];
-            _actorQuquBattlers[i] = CreateQuquBattler(ququId);
-            _enemyQuquBattlers[i] = CreateQuquBattler(ququId2);
+            this.win = win;
+            this.status = status;
         }
     }
 
-    public QuquBattler CreateQuquBattler(int ququId)
+    public BattleResult ShowStartBattleState()
     {
-        QuquBattler result = default(QuquBattler);
-        result.QuquId = ququId;
-        result.Hp = GetQuquWindow.instance.GetQuquDate(ququId, 11);
-        result.MaxHp = GetQuquWindow.instance.GetQuquDate(ququId, 11);
-        result.Sp = GetQuquWindow.instance.GetQuquDate(ququId, 12);
-        result.MaxSp = GetQuquWindow.instance.GetQuquDate(ququId, 12);
-        result.Level = DateFile.instance.GetItemDate(ququId, 8).ParseInt();
-        result.ColorId = DateFile.instance.GetItemDate(ququId, 2002).ParseInt();
-        result.PartId = DateFile.instance.GetItemDate(ququId, 2003).ParseInt();
-        result.Constitution = GetQuquWindow.instance.GetQuquDate(ququId, 11);
-        result.Fighting = GetQuquWindow.instance.GetQuquDate(ququId, 12);
-        result.Momentum = GetQuquWindow.instance.GetQuquDate(ququId, 21);
-        result.Wrestling = GetQuquWindow.instance.GetQuquDate(ququId, 22);
-        result.Pliers = GetQuquWindow.instance.GetQuquDate(ququId, 23);
-        result.Fatal = GetQuquWindow.instance.GetQuquDate(ququId, 31);
-        result.Damage = GetQuquWindow.instance.GetQuquDate(ququId, 32);
-        result.Disability = GetQuquWindow.instance.GetQuquDate(ququId, 36);
-        result.Defense = GetQuquWindow.instance.GetQuquDate(ququId, 33);
-        result.DamageReduction = GetQuquWindow.instance.GetQuquDate(ququId, 34);
-        result.Counterattack = GetQuquWindow.instance.GetQuquDate(ququId, 35);
-        result.Durability = DateFile.instance.GetItemDate(ququId, 901).ParseInt();
-        result.MaxDurability = DateFile.instance.GetItemDate(ququId, 902).ParseInt();
-        return result;
-    }
-
-    public bool GetResult()
-    {
-        winTurn = 0;
-        for (int i = 0; i < _actorQuquBattlers.Length; i++)
-        {
-            var result = ShowStartBattleState(i);
-            switch (result)
-            {
-                case 1:
-                    winTurn++;
-                    break;
-            }
-        }
-        return winTurn >= 2;
-    }
-
-    public int ShowStartBattleState(int index = 0)
-    {
-        int num = 0;
-        int level = _actorQuquBattlers[index].Level;
-        int level2 = _enemyQuquBattlers[index].Level;
-        int colorId = _actorQuquBattlers[index].ColorId;
-        int colorId2 = _enemyQuquBattlers[index].ColorId;
+        int level = battlers[0].Level;
+        int level2 = battlers[1].Level;
+        int colorId = battlers[0].ColorId;
+        int colorId2 = battlers[1].ColorId;
         if ((colorId != 0 && colorId2 == 0) || (level > level2 && level - level2 >= 6 && Random.Range(0, 100) < (level - level2) * 10))
         {
-            num = 1;
+            return new BattleResult(true, QuquBattler.BattlerStatus.无牙无叫);
         }
         else if ((colorId2 != 0 && colorId == 0) || (level2 > level && level2 - level >= 6 && Random.Range(0, 100) < (level2 - level) * 10))
         {
-            num = 2;
+            return new BattleResult(false, QuquBattler.BattlerStatus.无牙无叫);
         }
         else if (colorId == 0 && colorId2 == 0)
         {
-            num = 1 + Random.Range(0, 1);
+            return new BattleResult(Random.Range(0, 2) == 0, QuquBattler.BattlerStatus.无牙无叫);
         }
-        if (num > 0)
-        {
-            return num;
-        }
-        turnCount = attackCount = 0;
-        reAttackWeaken = Test.Weaken ? 5 : 0;
-        nextStep = new Queue<Action>();
-        QuquBattleLoopStart(index);
-        while (nextStep.Count > 0)
-        {
-            var action = nextStep.Dequeue();
-            action();
-        }
-        int result = GetTrueResult();
-        Item.Lib.Remove(_actorQuquBattlers[0].QuquId);
-        Item.Lib.Remove(_enemyQuquBattlers[0].QuquId);
-        return result;
+        Count = new int[3];
+        QuquBattleLoop();
+        return new BattleResult(battlers[1].IsDead, battlers[1].IsDead ? battlers[1].Status : battlers[0].Status);
     }
 
-    private bool QuquIsDead(int index)
+    private void QuquBattleLoop()
     {
-        bool flag = _actorQuquBattlers[index].Hp <= 0 || _actorQuquBattlers[index].Sp <= 0
-            || DateFile.instance.GetItemDate(_actorQuquBattlers[index].QuquId, 901).ToInt() <= 0;
-        bool flag2 = _enemyQuquBattlers[index].Hp <= 0 || _enemyQuquBattlers[index].Sp <= 0
-            || DateFile.instance.GetItemDate(_enemyQuquBattlers[index].QuquId, 901).ToInt() <= 0;
-        return flag | flag2;
-    }
-
-    private void QuquBattleLoopStart(int index)
-    {
-        int momentum = _actorQuquBattlers[index].Momentum;
-        int momentum2 = _enemyQuquBattlers[index].Momentum;
-        int 先手方 = 0;
-        if (momentum > momentum2)
+        do
         {
-            ShowDamage(index, true, false, 2, momentum, 0.6f, false, false, false, false, false, 0, 0);
-            先手方 = ((Random.Range(0, 100) < 80) ? 1 : 2);
-        }
-        else if (momentum2 > momentum)
-        {
-            ShowDamage(index, false, true, 2, momentum2, 0.6f, false, false, false, false, false, 0, 0);
-            先手方 = ((Random.Range(0, 100) >= 80) ? 1 : 2);
-        }
-        else
-        {
-            先手方 = 1 + Random.Range(0, 2);
-        }
-        if (!QuquIsDead(index))
-        {
-            switch (先手方)
+            Count[0]++;
+            int 我方气势 = battlers[0].气势;
+            int 敌方气势 = battlers[1].气势;
+            bool 我方先手;
+            if (我方气势 > 敌方气势)
             {
-                case 1:
-                    nextStep.Enqueue(() => { QuquBaseAttack(index, 1, newTurn: false); });
-                    return;
-                case 2:
-                    nextStep.Enqueue(() => { QuquBaseAttack(index, 2, newTurn: false); });
-                    return;
+                battlers[1].GetDamage(2, 我方气势);
+                我方先手 = Random.Range(0, 100) < 80;
             }
-        }
-        return;
-    }
-
-    private void QuquBaseAttack(int index, int attacker, bool newTurn)
-    {
-        turnCount++;
-        bool cHit = false;
-        bool def = false;
-        bool flag = false;
-        float num = 0.4f;
-        if (attacker == 1)
-        {
-            int num2 = _actorQuquBattlers[index].Pliers;
-            if (Random.Range(0, 100) < _actorQuquBattlers[index].Fatal)
+            else if (敌方气势 > 我方气势)
             {
-                cHit = true;
-                num2 += _actorQuquBattlers[index].Damage;
+                battlers[0].GetDamage(2, 敌方气势);
+                我方先手 = Random.Range(0, 100) >= 80;
             }
-            if (Random.Range(0, 100) < _enemyQuquBattlers[index].Defense)
+            else
             {
-                def = true;
-                num2 = Mathf.Max(0, num2 - _enemyQuquBattlers[index].DamageReduction);
+                我方先手 = Random.Range(0, 2) == 0;
             }
-            flag = (Random.Range(0, 100) < _enemyQuquBattlers[index].Counterattack);
-            nextStep.Enqueue(() => { ShowDamage(index, true, false, 1, num2, 0.1f, cHit, def, flag, false, newTurn, 0, 22); });
-            return;
-        }
-        int num3 = _enemyQuquBattlers[index].Pliers;
-        if (Random.Range(0, 100) < _enemyQuquBattlers[index].Fatal)
-        {
-            cHit = true;
-            num3 += _enemyQuquBattlers[index].Damage;
-        }
-        if (Random.Range(0, 100) < _actorQuquBattlers[index].Defense)
-        {
-            def = true;
-            num3 = Mathf.Max(0, num3 - _actorQuquBattlers[index].DamageReduction);
-        }
-        flag = (Random.Range(0, 100) < _actorQuquBattlers[index].Counterattack);
-        nextStep.Enqueue(() => { ShowDamage(index, false, true, 1, num3, 0.1f, cHit, def, flag, false, newTurn, 0, 22); });
-        return;
+            普攻(我方先手);
+        } while (!battlers[0].IsDead && !battlers[1].IsDead);
     }
 
-    private void ShowDamage(int index, bool attacker, bool defer, int typ, int damage, float delay, bool cHit, bool def, bool reAttack, bool isReAttack, bool newTurn, int reAttackTurn, int reAttackTyp)
+    private void 普攻(bool 我方先手)
     {
-        attackCount++;
-        bool cHit2 = false;
-        bool def2 = false;
-        QuquBattler ququBattler = _actorQuquBattlers[index];
-        QuquBattler ququBattler2 = _enemyQuquBattlers[index];
-        switch (typ)
+        bool 我方进攻 = 我方先手;
+        for (int i = 0; i < 2; i++)
         {
-            case 1:
-                {
-                    if (defer)
-                    {
-                        int num = 0;
-                        if (cHit | isReAttack)
-                        {
-                            num = ququBattler2.Momentum;
-                        }
-                        if (def)
-                        {
-                            num = Mathf.Max(0, num - ququBattler.DamageReduction);
-                        }
-                        else if (cHit)
-                        {
-                            int num2 = ququBattler2.Fatal + ququBattler2.Disability;
-                            if (Random.Range(0, 100) < num2)
-                            {
-                                DateFile.instance.ChangeItemHp(DateFile.instance.MianActorID(), ququBattler.QuquId, -1);
-                                if (Random.Range(0, 100) < num2)
-                                {
-                                    GetQuquWindow.instance.QuquAddInjurys(ququBattler.QuquId);
-                                }
-                            }
-                        }
-                        _actorQuquBattlers[index].Hp -= damage;
-                        ShowDebug(_actorQuquBattlers[index], 1, damage);
-                        if (num > 0)
-                        {
-                            _actorQuquBattlers[index].Sp -= num;
-                            ShowDebug(_actorQuquBattlers[index], 2, num);
-                        }
-                        if (QuquIsDead(index))
-                        {
-                            return;
-                        }
-                        if (reAttack)
-                        {
-                            int num3 = (reAttackTyp == 22) ? ququBattler.Wrestling : ququBattler.Pliers;
-                            if (Random.Range(0, 100) < ququBattler.Fatal)
-                            {
-                                cHit2 = true;
-                                num3 += ququBattler.Damage;
-                            }
-                            if (Random.Range(0, 100) < ququBattler2.Defense)
-                            {
-                                def2 = true;
-                                num3 = Mathf.Max(0, num3 - ququBattler2.DamageReduction);
-                            }
-                            bool reAttack2 = false;
-                            int num4 = ququBattler2.Counterattack - reAttackTurn * reAttackWeaken;
-                            if (Random.Range(0, 100) < num4)
-                            {
-                                reAttack2 = true;
-                            }
-                            nextStep.Enqueue(() => { ShowDamage(index, attacker, false, 1, num3, 0.1f, cHit2, def2, reAttack2, true, false, reAttackTurn+1, (reAttackTyp == 22) ? 23 : 22); });
-                            return;
-                        }
-                        if (attacker)
-                        {
-                            if (newTurn)
-                            {
-                                nextStep.Enqueue(() => { QuquBattleLoopStart(index); });
-                                return;
-                            }
-                            nextStep.Enqueue(() => { QuquBaseAttack(index, 2, newTurn: true); });
-                            return;
-                        }
-                        if (newTurn)
-                        {
-                            nextStep.Enqueue(() => { QuquBattleLoopStart(index); });
-                            return;
-                        }
-                        nextStep.Enqueue(() => { QuquBaseAttack(index, 1, newTurn: true); });
-                        return;
-                    }
-                    int num6 = 0;
-                    if (cHit | isReAttack)
-                    {
-                        num6 = ququBattler.Momentum;
-                    }
-                    if (def)
-                    {
-                        num6 = Mathf.Max(0, num6 - ququBattler2.DamageReduction);
-                    }
-                    else if (cHit)
-                    {
-                        int num7 = ququBattler.Fatal + ququBattler.Disability;
-                        if (Random.Range(0, 100) < num7)
-                        {
-                            DateFile.instance.ChangeItemHp(DateFile.instance.MianActorID(), ququBattler2.QuquId, -1);
-                            if (Random.Range(0, 100) < num7)
-                            {
-                                GetQuquWindow.instance.QuquAddInjurys(ququBattler2.QuquId);
-                            }
-                        }
-                    }
-                    _enemyQuquBattlers[index].Hp -= damage;
-                    ShowDebug(_enemyQuquBattlers[index], 1, damage);
-                    if (num6 > 0)
-                    {
-                        _enemyQuquBattlers[index].Sp -= num6;
-                        ShowDebug(_enemyQuquBattlers[index], 2, num6);
-                    }
-                    if (QuquIsDead(index))
-                    {
-                        return;
-                    }
-                    if (reAttack)
-                    {
-                        int num8 = (reAttackTyp == 22) ? ququBattler2.Wrestling : ququBattler2.Pliers;
-                        if (Random.Range(0, 100) < ququBattler2.Fatal)
-                        {
-                            cHit2 = true;
-                            num8 += ququBattler2.Damage;
-                        }
-                        if (Random.Range(0, 100) < ququBattler.Defense)
-                        {
-                            def2 = true;
-                            num8 = Mathf.Max(0, num8 - ququBattler.DamageReduction);
-                        }
-                        bool reAttack3 = false;
-                        int num9 = ququBattler.Counterattack - reAttackTurn * reAttackWeaken;
-                        if (Random.Range(0, 100) < num9)
-                        {
-                            reAttack3 = true;
-                        }
-                        nextStep.Enqueue(() => { ShowDamage(index, attacker, true, 1, num8, 0.1f, cHit2, def2, reAttack3, true, false, reAttackTurn+1, (reAttackTyp == 22) ? 23 : 22); });
-                        return;
-                    }
-                    if (attacker)
-                    {
-                        if (newTurn)
-                        {
-                            nextStep.Enqueue(() => { QuquBattleLoopStart(index); });
-                            return;
-                        }
-
-                        nextStep.Enqueue(() => { QuquBaseAttack(index, 2, newTurn: true); });
-                        return;
-                    }
-                    if (newTurn)
-                    {
-                        nextStep.Enqueue(() => { QuquBattleLoopStart(index); });
-                        return;
-                    }
-
-                    nextStep.Enqueue(() => { QuquBaseAttack(index, 1, newTurn: true); });
-                    return;
-                }
-            case 2:
-                if (defer)
-                {
-                    _actorQuquBattlers[index].Sp -= damage;
-                    ShowDebug(_actorQuquBattlers[index], typ, damage);
-                }
-                else
-                {
-                    _enemyQuquBattlers[index].Sp -= damage;
-                    ShowDebug(_enemyQuquBattlers[index], typ, damage);
-                }
-                break;
+            Count[1]++;
+            QuquBattler 进攻者 = battlers[我方进攻 ? 0 : 1];
+            QuquBattler 防守者 = battlers[我方进攻 ? 1 : 0];
+            bool 触发暴击 = false;
+            bool 触发格挡 = false;
+            bool 触发反击 = false;
+            int 伤害 = 进攻者.牙钳;
+            if (Random.Range(0, 100) < 进攻者.暴击率)
+            {
+                触发暴击 = true;
+                伤害 += 进攻者.暴击增伤;
+            }
+            if (Random.Range(0, 100) < 防守者.格挡率)
+            {
+                触发格挡 = true;
+                伤害 = Mathf.Max(0, 伤害 - 防守者.格挡数值);
+            }
+            触发反击 = (Random.Range(0, 100) < 防守者.反击率);
+            if (缠斗(我方进攻, !我方进攻, 伤害, 触发暴击, 触发格挡, 触发反击)) i = 0; //如果有过暴击，则一定还有半轮
+            if (进攻者.IsDead || 防守者.IsDead) return;
+            我方进攻 = !我方进攻; //交换半场
         }
-        return;
     }
 
-    private void ShowDebug(QuquBattler battler, int type, int damage)
+    private bool 缠斗(bool 进攻方, bool 受伤方, int 耐力伤害, bool 触发暴击, bool 触发格挡, bool 触发反击, bool 是反击 = false, int 反击计数 = 0)
     {
+        while(true)
+        {
+            Count[2]++;
+            QuquBattler 伤害来源 = battlers[受伤方 ? 1 : 0];
+            QuquBattler 受伤者 = battlers[受伤方 ? 0 : 1];
+
+            int 斗性伤害 = 0;
+            if (触发暴击 | 是反击)
+            {
+                斗性伤害 = 伤害来源.气势;
+            }
+            if (触发格挡)
+            {
+                斗性伤害 = Mathf.Max(0, 斗性伤害 - 受伤者.格挡数值);
+            }
+            else if (触发暴击)
+            {
+                int 击伤率 = 伤害来源.暴击率 + 伤害来源.击伤调整;
+                if (Random.Range(0, 100) < 击伤率)
+                {
+                    受伤者.GetDamage(3, 1);//耐久
+                    if (Random.Range(0, 100) < 击伤率)
+                    {
+                        受伤者.GetDamage(4);//残废
+                    }
+                }
+            }
+            受伤者.GetDamage(1, 耐力伤害);
+            if (斗性伤害 > 0)
+            {
+                受伤者.GetDamage(2, 斗性伤害);
+            }
+
+            if (受伤者.IsDead || !触发反击) return 是反击; //若本次不触发反击，缠斗结束
+
+            //下一次攻击的反击判定
+            bool 反击将触发暴击 = false;
+            bool 反击将触发格挡 = false;
+            int 反击伤害 = 进攻方 != 受伤方 ? 受伤者.角力 : 受伤者.牙钳;
+            if (Random.Range(0, 100) < 受伤者.暴击率)
+            {
+                反击将触发暴击 = true;
+                反击伤害 += 受伤者.暴击增伤;
+            }
+            if (Random.Range(0, 100) < 伤害来源.格挡率)
+            {
+                反击将触发格挡 = true;
+                反击伤害 = Mathf.Max(0, 反击伤害 - 伤害来源.格挡数值);
+            }
+            bool 反击将触发反击 = false;
+            int 反击概率 = 伤害来源.反击率 - 反击计数 * 反击衰减;
+            if (Random.Range(0, 100) < 反击概率)
+            {
+                反击将触发反击 = true;
+            }
+            受伤方 = !受伤方;
+            耐力伤害 = 反击伤害;
+            触发暴击 = 反击将触发暴击;
+            触发格挡 = 反击将触发格挡;
+            触发反击 = 反击将触发反击;
+            是反击 = true;
+            反击计数++;
+        }
     }
 }
