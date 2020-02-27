@@ -120,6 +120,26 @@ namespace WikiDate
                     Show(icon + "\t" + gsInfoAsset.GetSpriteName("buildingSprites", icon), limit:false);
                 }
             }
+            flag = GUILayout.Button("图片名");
+            if (flag)
+            {
+                var dynamicSetSprite = SingletonObject.getInstance<DynamicSetSprite>();
+                var gsInfoAsset = (GetSpritesInfoAsset)typeof(DynamicSetSprite)
+                    .GetField("gsInfoAsset", BindingFlags.NonPublic | BindingFlags.Instance)
+                    .GetValue(dynamicSetSprite);
+                var commonNameGroup = (Dictionary<string, string[]>)typeof(GetSpritesInfoAsset)
+                    .GetField("commonNameGroup", BindingFlags.NonPublic | BindingFlags.Instance)
+                    .GetValue(gsInfoAsset);
+                foreach (var typ in commonNameGroup)
+                {
+                    Main.Logger.Log($"{typ.Key}:");
+                    for (int i = 0; i < typ.Value.Length; i++)
+                    {
+                        Main.Logger.Log($"\t[{i}] = \"{typ.Value[i]}\"");
+                    }
+                    Main.Logger.Log("");
+                }
+            }
             GUILayout.EndHorizontal();
 
             GUILayout.BeginVertical();
