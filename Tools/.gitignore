@@ -1,0 +1,6 @@
+*.lnk
+.vs/
+obj/Debug/
+*.cache
+*.zip
+*.ide
