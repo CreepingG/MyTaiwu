@@ -24,6 +24,32 @@ class QuquData
             );
         }
     }
+
+    private readonly int[][][] cache = new int[10][][];
+
+    public int[][] GetAll(int level)
+    {
+        if (cache[level] != null) return cache[level];
+        if (level == 9)
+        {
+            return cache[level] = Source.Where(kvp => kvp.Value[5] == "1").Select(kvp => new int[] { kvp.Key, 0 }).ToArray();
+        }
+        if (level == 8)
+        {
+            return cache[level] = Source.Where(kvp => kvp.Value[7] != "0").Select(kvp => new int[] { kvp.Key, 0 }).ToArray();
+        }
+        var colors = Source.Where(kvp => kvp.Value[3] != "0").Where(kvp => kvp.Value[1].ToInt() == level);
+        var parts = Source.Where(kvp => kvp.Value[4] != "0").Where(kvp => kvp.Value[1].ToInt() < level);
+        var colorBetter = colors.SelectMany(color => parts.Select(part => new int[] { color.Key, part.Key }));
+
+        var colors2 = Source.Where(kvp => kvp.Value[3] != "0").Where(kvp => kvp.Value[1].ToInt() < level);
+        var parts2 = Source.Where(kvp => kvp.Value[4] != "0").Where(kvp => kvp.Value[1].ToInt() == level);
+        var partBetter = colors2.SelectMany(color => parts2.Select(part => new int[] { color.Key, part.Key }));
+
+        var same = colors.SelectMany(color => parts2.Select(part => new int[] { color.Key, part.Key }));
+
+        return cache[level] = colorBetter.Concat(partBetter).Concat(same).ToArray();
+    }
 }
 
 public class Item:Dictionary<int, int>
@@ -51,8 +77,8 @@ class GetQuquWindow
 
     public int GetQuquDate(int colorId, int partId, int index)
     {
-        int colorValue = QuquData.instance.Source[colorId][index].ParseInt();
-        int partValue = (partId > 0) ? QuquData.instance.Source[partId][index].ParseInt() : 0;
+        int colorValue = QuquData.instance.Source[colorId][index].ToInt();
+        int partValue = (partId > 0) ? QuquData.instance.Source[partId][index].ToInt() : 0;
         int result =  colorValue + partValue;
         return result;
     }
@@ -75,8 +101,8 @@ class GetQuquWindow
         {
             if (Random.Range(0, 100) < 10)
             {
-                battler.GetDamage(3, 1);
-                battler.GetDamage(4);
+                battler.GetDamage(QuquBattler.DamageTyp.耐力, 1);
+                battler.GetDamage(QuquBattler.DamageTyp.属性);
             }
         }
         return battler;
@@ -217,3 +243,36 @@ static class Mathf
     public static Func<int, int, int> Min = Math.Min;
     public static int Clamp(int value, int min, int max) => Math.Min(Math.Max(value, min), max);
 }
+
+class Writer
+{
+    FileStream File;
+
+    public Writer(string fileName, string folderName = null)
+    {
+        if (!string.IsNullOrWhiteSpace(folderName))
+        {
+            if (!Directory.Exists(fileName)) Directory.CreateDirectory(fileName);//创建目录
+            fileName = folderName + "\\" + fileName;
+        }
+        File = new FileStream(fileName, FileMode.Create);
+    }
+
+    ~Writer()
+    {
+        if (File != null) File.Close();
+    }
+
+    public void WriteLine(object s)
+    {
+        byte[] data = System.Text.Encoding.Default.GetBytes(s.ToString() + '\n');
+        File.Write(data, 0, data.Length);
+        File.Flush();
+    }
+
+    public void Done()
+    {
+        File.Close();
+        File = null;
+    }
+} 

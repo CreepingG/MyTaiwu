@@ -2,7 +2,7 @@
   "Id": "WindTest",
   "DisplayName": "风测",
   "Author": "东风有意",
-  "Version": "1.0.0",
+  "Version": "1.0.2",
   "AssemblyName": "WindTest.dll",
   "EntryMethod": "WindTest.Main.Load"
 }

@@ -14,7 +14,7 @@ namespace WindTest
     {
         public override void Save(UnityModManager.ModEntry modEntry)
         {
-            UnityModManager.ModSettings.Save<Settings>(this, modEntry);
+            Save(this, modEntry);
         }
         public int actorDamage = 0;
         public int enemyDamage = 0;
@@ -28,6 +28,8 @@ namespace WindTest
         public bool partMatch = true;
         public int XXValue = 101;
         public bool ignoreEvents = false;
+        public bool ignoreCreepings = true;
+        public string input = "";
     }
 
     public static class Main
@@ -36,7 +38,7 @@ namespace WindTest
         public static Settings settings;
         public static UnityModManager.ModEntry.ModLogger Logger;
         public static string[] damageName = { "不变", "被秒", "免伤" };
-        public static Timer timer = new Timer();
+        public static Timer timer;
         public static string inputItemId = "";
         public static string inputItemNumber = "1";
         public static string result = "";
@@ -50,21 +52,6 @@ namespace WindTest
                 _watchingActor = value;
             }
         }
-        public static void Show(object text)
-        {
-            int id = -489819;
-            var date = DateFile.instance.tipsMassageDate;
-            if (!date.ContainsKey(id))
-            {
-                date.Add(id, new Dictionary<int, string>
-                {
-                    [1] = "3",
-                    [2] = "0",
-                    [99] = "D0"
-                });
-            }
-            TipsWindow.instance.SetTips(id, new string[] { text.ToString() }, 300);
-        }
         public static bool Load(UnityModManager.ModEntry modEntry)
         {
             Logger = modEntry.Logger;
@@ -74,9 +61,12 @@ namespace WindTest
             modEntry.OnToggle = OnToggle;
             modEntry.OnGUI = OnGUI;
             modEntry.OnSaveGUI = OnSaveGUI;
-            timer.Interval = 500d;
-            timer.Elapsed += TimerElapsed;
-            timer.Start();
+            /*timer = new Timer
+            {
+                Interval = 500d
+            };
+            timer.Elapsed += (object sender, ElapsedEventArgs e) => { "do something";};
+            timer.Start();*/
             new GEventRegister();
             return true;
         }
@@ -89,7 +79,7 @@ namespace WindTest
 
         static void OnGUI(UnityModManager.ModEntry modEntry)
         {
-            
+
             GUILayout.BeginHorizontal();
             GUILayout.Label("太吾所受伤害：");
             settings.actorDamage = GUILayout.SelectionGrid(settings.actorDamage, damageName, 3);
@@ -103,14 +93,61 @@ namespace WindTest
             settings.lockTime = GUILayout.Toggle(settings.lockTime, "行动力锁99");
             settings.maxWeight = GUILayout.Toggle(settings.maxWeight, "最大负重");
             //settings.noFeature = GUILayout.Toggle(settings.noFeature, "无特性");
-            settings.lockXX = GUILayout.Toggle(settings.lockXX, "锁入魔值");
-            if (settings.lockXX && int.TryParse(GUILayout.TextField(settings.XXValue.ToString()), out int tmp)) settings.XXValue = tmp;
-            settings.ignoreEvents = GUILayout.Toggle(settings.ignoreEvents, "无视时节开始事件与外道事件");
+            //settings.lockXX = GUILayout.Toggle(settings.lockXX, "锁入魔值");
+            //if (settings.lockXX && int.TryParse(GUILayout.TextField(settings.XXValue.ToString()), out int tmp)) settings.XXValue = tmp;
+            settings.ignoreEvents = GUILayout.Toggle(settings.ignoreEvents, "无视时节开始的乞讨事件");
+            settings.ignoreCreepings = GUILayout.Toggle(settings.ignoreCreepings, "自动驱逐外道（不打断移动）");
+            GUILayout.EndHorizontal();
+            GUILayout.BeginHorizontal();
+            /*
+            if (GUILayout.Button("奇遇", GUILayout.Width(100)))
+            {
+                var aggr = new DefaultDictionary<int, int>();
+                var storyId = int.TryParse(settings.input, out int num) ? num : 10001;
+                DateFile.instance.AllMapRandSetStory(storyId, 6, true, 1);
+                foreach (var part in DateFile.instance.worldMapState)
+                {
+                    var cnt = part.Value.Count(place => place.Value[0] == storyId);
+                    var partId = part.Key;
+                    var name = DateFile.instance.placeWorldDate.ContainsKey(partId) ? DateFile.instance.placeWorldDate[partId][98] : partId.ToString();
+                    //Main.Logger.Log($"{name}::{cnt}");
+                    aggr[cnt] += 1;
+                }
+                var sum = aggr.Sum(kvp => kvp.Value);
+                foreach (var kvp in aggr)
+                {
+                    Main.Logger.Log($"{kvp.Key}::{kvp.Value * 100 / sum}%");
+                }
+            }
+            if (GUILayout.Button("连续结婚", GUILayout.Width(100)))
+            {
+                DateFile.instance.actorLife[DateFile.instance.mianActorId].Remove(901); //移除怀孕信息
+                var actorId = int.TryParse(settings.input, out int num) ? num : Actor.Instance.ID;
+                for (int i = 0; i < 100; i++)
+                {
+                    MessageEventManager.Instance.SetSpouseSocial(actorId, DateFile.instance.mianActorId, 0);
+                }
+            }
+            if (GUILayout.Button("快速自交", GUILayout.Width(100)))
+            {
+                var actorId = int.TryParse(settings.input, out int num) ? num : DateFile.instance.mianActorId;
+                for (int i = 0; i < 20; i++)
+                {
+                    foreach(var childId in DateFile.instance.MakeNewChildren(DateFile.instance.mianActorId, actorId, true, true))
+                    {
+                        GameData.Characters.SetCharProperty(childId, 11, "20");
+                        DateFile.instance.ActorFeaturesCacheReset(childId);
+                        //DateFile.instance.NewActorFeatures(childId,null, DateFile.instance.mianActorId, DateFile.instance.mianActorId);
+                    }
+                }
+            }
+            settings.input = GUILayout.TextField(settings.input);
+            */
             //if (GUILayout.Button("当场怀孕")) Pregnant();
             //if (GUILayout.Button("test")) InvokeTest();
             GUILayout.EndHorizontal();
-            
-            if(DateFile.instance != null && DateFile.instance.mianActorId > 0)
+
+            if (DateFile.instance != null && DateFile.instance.mianActorId > 0)
             {
                 GUILayout.BeginHorizontal("Box");
                 GUILayout.EndHorizontal();
@@ -173,7 +210,7 @@ namespace WindTest
             GUILayout.Label($"修改{ge.Title}: id = {ge.ID}, 名称 = {ge.GetName(ge.ID)}");
             GUILayout.Label("序号 =", GUILayout.Width(50));
             if (int.TryParse(
-                GUILayout.TextField(ge.setting.key.ToString(), GUILayout.Width(40)), 
+                GUILayout.TextField(ge.setting.key.ToString(), GUILayout.Width(40)),
                 out int newKey
             ))
                 ge.setting.key = newKey;
@@ -214,9 +251,11 @@ namespace WindTest
             {
                 if (keys.Contains(inputKey))
                 {
-                    var value = ge.GetProp(id, inputKey);
-                    ge.setting.value = value;
-                    return $"{name}[{inputKey}] 为 {value}";
+                    var v0 = ge.GetProp(id, inputKey, false);
+                    var v1 = ge.GetProp(id, inputKey);
+                    ge.setting.value = v0;
+                    var show = v0 == v1 ? v0 : $"{v1}（{v0}）";
+                    return $"{name}[{inputKey}] 为 {show}";
                 }
                 else
                     return $"错误的键";
@@ -230,11 +269,13 @@ namespace WindTest
                     if (++index >= keys.Count) index = 0;
                     if (index == origin) break;
                     int key = keys[index];
-                    string value = ge.GetProp(id, key, false);
-                    if (Match(value, inputValue))
+                    var v0 = ge.GetProp(id, key, false);
+                    var v1 = ge.GetProp(id, key);
+                    if (Match(v0, inputValue))
                     {
                         ge.setting.key = key;
-                        return $"{name}[{key}] 为 {value}，再次点击可查找下一个匹配项";
+                        var show = v0 == v1 ? v0 : $"{v1}（{v0}）";
+                        return $"{name}[{key}] 为 {show}，再次点击可查找下一个匹配项";
                     }
                 }
                 // 没找到
@@ -279,7 +320,7 @@ namespace WindTest
             if (n == 1)
             {
                 int resultId = DateFile.instance.GetItem(mainId, itemId, n, true, 0);
-                if (resultId == 0 ) return "无法获得该物品";
+                if (resultId == 0) return "无法获得该物品";
                 string itemName = DateFile.instance.GetItemDate(resultId, 0, true).Replace("\n", @"\n");
                 return $"成功获得物品：{itemName}";
             }
@@ -324,6 +365,67 @@ namespace WindTest
             }
             var info = typ.GetField("enabled", AccessTools.all);
             Main.Logger.Log(((bool)info.GetValue(null)).ToString());
+        }
+
+        public static void Say(object o)
+        {
+            var s = o.ToString();
+            Logger.Log(s);
+            Util.Show(s);
+        }
+    }
+
+    public static class Util
+    {
+        public static string Dit() => WindowManage.instance.Dit();
+        public static string Cut(int color = 20002) => WindowManage.instance.Cut(color);
+        public static string Color(int color, string s) => DateFile.instance.SetColoer(color, s);
+        public static string Color(int color, object s) => DateFile.instance.SetColoer(color, s.ToString());
+        public static string ColorName(string name) => Color(10002, name);
+        public static int ToInt(this string s) => Convert.ToInt32(s);
+        public static decimal ToDecimal(this string s) => decimal.Parse(s);
+
+        public static void Show(object text)
+        {
+            int id = -489819;
+            var date = DateFile.instance.tipsMassageDate;
+            if (!date.ContainsKey(id))
+            {
+                date.Add(id, new Dictionary<int, string>
+                {
+                    [1] = "3",
+                    [2] = "0",
+                    [99] = "D0"
+                });
+            }
+            TipsWindow.instance.SetTips(id, new string[] { text.ToString() }, 300);
+        }
+        public static string GetActorName(int actorId, bool fullName = false, bool showGang = false)
+        {
+            string actorName = DateFile.instance.GetActorName(actorId, fullName, false);
+            if (!showGang) return actorName;
+            int gang = DateFile.instance.GetActorDate(actorId, 19, false).ToInt();
+            string gangName = DateFile.instance.GetGangDate(gang, 0);
+            int num20 = DateFile.instance.GetActorDate(actorId, 20, false).ToInt();
+            int grade = 10 - Mathf.Abs(num20);
+            grade = Mathf.Clamp(grade, 1, 9);
+            int gangValueId = DateFile.instance.GetGangValueId(gang, 10 - grade);
+            bool isMale = DateFile.instance.GetActorDate(actorId, 14) == "1";
+            int levelKey = num20 < 0 ? (isMale ? 1002 : 1003) : 1001;
+            string levelName = DateFile.instance.presetGangGroupDateValue[DateFile.instance.GetGangValueId(gang, num20)][levelKey];
+            levelName = DateFile.instance.SetColoer(20001 + grade, levelName, false);
+
+            return gangName + levelName + " " + actorName;
+        }
+    }
+
+    public class DefaultDictionary<TKey, TValue> : Dictionary<TKey, TValue>
+    {
+        public TValue Default;
+        public new TValue this[TKey key]
+        {
+            get => ContainsKey(key) ? base[key] : Default;
+            set => base[key] = value;
         }
     }
 
@@ -407,10 +509,8 @@ namespace WindTest
             int hp = DateFile.instance.Hp(defenderId);
             int needDamage = maxHp - hp;
             int injuryPower = needDamage * 100 / injuryDate;
+            BattleSystem.instance.AddBattleInjury(isActor, defenderId, attackerId, injuryId, injuryPower);
             int index = isActor ? DateFile.instance.actorBattlerIdDate.IndexOf(defenderId) : DateFile.instance.enemyBattlerIdDate.IndexOf(defenderId);
-            var method = typeof(BattleSystem).GetMethod("AddBattleInjury",
-                        BindingFlags.NonPublic | BindingFlags.Instance);
-            method.Invoke(__instance, new object[] { isActor, defenderId, injuryId, injuryPower, false});
             __instance.UpdateActorHpSpBar(index, isActor, true, false);
 
         }
@@ -419,12 +519,21 @@ namespace WindTest
     [HarmonyPatch(typeof(BattleSystem), "AddBattleInjury")]
     public static class WindTest_AddBattleInjury_Patch
     {
-        static bool Prefix(BattleSystem __instance, ref bool isActor)
+        static bool Prefix(BattleSystem __instance, bool isActor, int actorId, int attackerId, int injuryId, int injuryPower, ref List<int> __result)
         {
             if (!Main.enabled) return true;
             bool flag1 = isActor && Main.settings.actorDamage == 2;
             bool flag2 = !isActor && Main.settings.enemyDamage == 2;
-            if (flag1 || flag2) return false;
+            if (flag1 || flag2)
+            {
+                __result = new List<int>
+                {
+                    injuryId,
+                    injuryPower,
+                    actorId
+                };
+                return false;
+            }
             return true;
         }
     }
@@ -487,10 +596,30 @@ namespace WindTest
 
         void IgnoreEvent(params object[] args)
         {
-            if (Main.settings.ignoreEvents)
+            if (Main.enabled && Main.settings.ignoreEvents)
             {
-                Main.Show($"忽略了{DateFile.instance.eventId.Count}个事件");
-                DateFile.instance.eventId.Clear();
+                var len0 = DateFile.instance.eventId.Count;
+                DateFile.instance.eventId = DateFile.instance.eventId.Where(arr => 
+                {
+                    var isBegging = arr.Length > 2 && (arr[2] >= 207 && arr[2] <= 224 || arr[2] == 230);
+                    if (isBegging)
+                    {
+                        try
+                        {
+                            Main.Logger.Log($"忽略【{DateFile.instance.GetActorName(arr[1])}】的【{DateFile.instance.eventDate[arr[2]][3]}】事件");
+                        }
+                        catch(Exception e)
+                        {
+                            Main.Logger.Log($"忽略【{arr[1]}】的【{arr[2]}】事件");
+                        }
+                    }
+                    return !isBegging;
+                }).ToList(); //筛选事件id范围
+                var len1 = DateFile.instance.eventId.Count;
+                if (len0 > len1)
+                {
+                    Util.Show($"忽略了{len0 - len1}个乞讨事件");
+                }
             }
         }
     }
@@ -501,21 +630,14 @@ namespace WindTest
     {
         static bool Prefix(int actorId, int socialTyp, int index, ref int __result)
         {
-            if (!Main.enabled) return true;
+            if (!Main.enabled || !Main.settings.lockXX) return true;
             if (socialTyp == 501 && index == 0)
             {
-                int prev = DateFile.instance.HaveLifeDate(actorId, socialTyp) && DateFile.instance.actorLife[actorId][socialTyp].Count > index ? 
-                    DateFile.instance.actorLife[actorId][socialTyp][index] : -1;
-                Main.Logger.Log(DateFile.instance.GetActorName(actorId) + " : " + prev.ToString());
+                /*int prev = DateFile.instance.HaveLifeDate(actorId, socialTyp) && DateFile.instance.actorLife[actorId][socialTyp].Count > index ? 
+                    DateFile.instance.actorLife[actorId][socialTyp][index] : -1;*/
                 __result = Main.settings.XXValue;
                 return false;
             }
-            //印象
-            /*if (socialTyp == 1001 && index == 1)
-            {
-                __result = 100;
-                return false;
-            }*/
             return true;
         }
     }
@@ -539,35 +661,57 @@ namespace WindTest
             
         }
     }
-
-    // 攔截遭遇逃亡小怪事件
-    [HarmonyPatch(typeof(ui_MessageWindow), "SetEventWindow")]
-    public class WindTest_SetEventWindow_Patch
+    
+    // 拦截地图野怪逃跑并给予威望，不打断移动
+    [HarmonyPatch(typeof(UIManager), "AddUI")]
+    public class WindTest_AddUI_Patch
     {
-        private static void Postfix(ui_MessageWindow __instance, int[] eventDate)
+        private static bool Prefix(string uiPrefabName, params object[] onShowArgs)
         {
-            if (Main.enabled && eventDate.Length == 4 && eventDate[2] == 112)
+            if (Main.enabled && Main.settings.ignoreCreepings && uiPrefabName == "ui_MessageWindow" && onShowArgs.Length > 0)
             {
-                GameObject choose = UnityEngine.Object.Instantiate<GameObject>(__instance.massageChoose1, Vector3.zero, Quaternion.identity);
-                choose.name = "Choose,11200002";
-                choose.GetComponent<Button>().onClick.Invoke();
-                UnityEngine.Object.Destroy(choose);
+                var arr = onShowArgs[0] as int[];
+                if (arr?.Length > 2 && arr[2] == 112) //事件id
+                {
+                    MessageEventManager.Instance.MainEventData = arr;
+                    EndEvent113_3();
+                    return false;
+                }
             }
+            return true;
         }
 
-        private static Button GetSkipButtonFromComponets(ui_MessageWindow instance)
+        static MethodInfo _method;
+        static void EndEvent113_3()
         {
-            var skipBtn = instance.GetComponentsInChildren<Button>().FirstOrDefault(btn => btn.name == "Choose,11200002");
-            if (skipBtn == null)
+            if (_method == null)
             {
-                Main.Logger.Log("Could't find the skip choose!");
-                return null;
+                _method = typeof(MessageEventManager).GetMethod("EndEvent113_3", BindingFlags.NonPublic | BindingFlags.Instance);
             }
-
-            return skipBtn;
+            _method.Invoke(MessageEventManager.Instance, new object[] { });
         }
-
 
     }
-
+    /*
+    [HarmonyPatch(typeof(BattleSystem), "AI_SetDanger")]
+    public static class WindTest_AI_SetDanger_Patch
+    {
+        static void Prefix(BattleSystem __instance, bool isActor, int value)
+        {
+            if (!Main.enabled) return;
+            if (!isActor) return;
+            var s1 = $"value={value}";
+            var s2 = $"danger: {__instance.Player_Danger}";
+            Main.Say(s1);
+            Main.Say(s2);
+        }
+        static void Postfix(BattleSystem __instance, bool isActor, int value)
+        {
+            if (!Main.enabled) return;
+            if (!isActor) return;
+            var s2 = $"danger: {__instance.Player_Danger}";
+            Main.Say(s2);
+        }
+    }*/
+    
 }

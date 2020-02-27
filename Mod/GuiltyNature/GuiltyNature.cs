@@ -8,6 +8,7 @@ using UnityEngine.UI;
 using UnityModManagerNet;
 using System.Text.RegularExpressions;
 using System.IO;
+using System.Collections;
 
 namespace GuiltyNature
 {
@@ -25,6 +26,27 @@ namespace GuiltyNature
         public int addParent = 0;
         public bool cd = true;
         public bool ignoreBlood = true;
+        public Settings() : this(5 + 9) //456
+        {
+        }
+        public Settings(int i) : this(i > 0 ? 0 : i, i <= 0 ? 0 : i)
+        {
+
+        }
+        public Settings(int i, int j)
+        {
+
+        }
+        ~Settings()
+        {
+
+        }
+        enum Typ
+        {
+            red,
+            yrl,
+            af
+        }
     }
 
     public static class Main
@@ -35,8 +57,6 @@ namespace GuiltyNature
         public static string resBasePath;
         public static string folderName = "Texture";
         public static string[] addParentText = { "从不", "仅当与对方有亲密关系时", "一直" };
-        public static int DateKey = 0;//记录当前获取key值，用于报错
-        public static string DateName = "";//记录当前获取字典名，用于报错
 
         static Stack<string> FailedLog = new Stack<string>();
 
@@ -75,24 +95,25 @@ namespace GuiltyNature
         public static bool OnToggle(UnityModManager.ModEntry modEntry, bool value)
         {
             enabled = value;
+            QuquEvent.Switch();
             return true;
         }
 
         static void OnGUI(UnityModManager.ModEntry modEntry)
         {
             GUILayout.BeginHorizontal();
-            GUILayout.Label("<color=#F28234FF>本mod要求太吾版本不低于2.5.X</color>");
             GUILayout.Label("<color=#F28234FF>在已积有被欺侮事件的情况下卸载本mod会导致回合开始时报错，但不影响游戏继续</color>");
             GUILayout.EndHorizontal();
+
             GUILayout.BeginVertical("Box");
             GUILayout.BeginHorizontal();
-            GUILayout.Label("功能1：相虫失败时可以选择将对方变成蛐蛐");
+            GUILayout.Label("功能1：【相人不相虫】相虫失败时可以选择将对方变成蛐蛐");
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
             settings.needNoImpression = GUILayout.Toggle(settings.needNoImpression, "无需印象");
-            bool flag = GUILayout.Toggle(settings.ququEnabled, "将【取其性命】改为【化为促织】");
-            if (flag != settings.ququEnabled)
+            if (GUILayout.Toggle(settings.ququEnabled, "将【取其性命】改为【化为促织】") != settings.ququEnabled)
             {
+                settings.ququEnabled = !settings.ququEnabled;
                 QuquEvent.Switch();
             }
             GUILayout.EndHorizontal();
@@ -100,45 +121,50 @@ namespace GuiltyNature
 
             GUILayout.BeginVertical("Box");
             GUILayout.BeginHorizontal();
-            GUILayout.Label("功能2：");
-            settings.rapedEnabled = GUILayout.Toggle(settings.rapedEnabled, "允许触发太吾被欺侮事件");
+            GUILayout.Label("功能2：【太吾亦可欺】允许触发太吾被欺侮事件");
             GUILayout.FlexibleSpace();
+            settings.rapedEnabled = GUILayout.Toggle(settings.rapedEnabled, "");
             GUILayout.EndHorizontal();
-            GUILayout.BeginHorizontal();
-            bool flag2 = GUILayout.Toggle(settings.moreRape, "提高欺侮触发率");
-            if (flag2 != settings.moreRape)
+            if (settings.rapedEnabled)
             {
-                settings.moreRape = flag2;
-                RapedEvent.ShiftProb(settings.moreRape);
+                GUILayout.BeginHorizontal();
+                bool flag2 = GUILayout.Toggle(settings.moreRape, "提高欺侮触发率");
+                if (flag2 != settings.moreRape)
+                {
+                    settings.moreRape = flag2;
+                    RapedEvent.Switch(settings.moreRape);
+                }
+                settings.cd = GUILayout.Toggle(settings.cd, "限制同一个人过于频繁的欺侮");
+                GUILayout.EndHorizontal();
+                GUILayout.BeginHorizontal();
+                settings.increasing = GUILayout.Toggle(settings.increasing, "【恶性循环】你的软弱会让恶人更加肆无忌惮，除非…永绝后患！");
+                GUILayout.EndHorizontal();
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("将欺侮者加入孩子的父母关系列表");
+                settings.addParent = GUILayout.SelectionGrid(settings.addParent, addParentText, 3);
+                GUILayout.EndHorizontal();
             }
-            settings.cd = GUILayout.Toggle(settings.cd, "限制同一个人过于频繁的欺侮");
-            GUILayout.EndHorizontal();
-            GUILayout.BeginHorizontal();
-            settings.increasing = GUILayout.Toggle(settings.increasing, "【恶性循环】你的软弱会让恶人更加肆无忌惮，除非…永绝后患！");
-            GUILayout.EndHorizontal();
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("将欺侮者加入孩子的父母关系列表");
-            settings.addParent = GUILayout.SelectionGrid(settings.addParent, addParentText, 3);
-            GUILayout.EndHorizontal();
             GUILayout.EndVertical();
             
             GUILayout.BeginVertical("Box");
             GUILayout.BeginHorizontal();
-            GUILayout.Label("功能3：互动-敌对-乱情瘴，可令对方爱上或遗忘指定的人");
+            GUILayout.Label("功能3：【乱情瘴】互动-敌对-乱情瘴，可令对方爱上或遗忘指定的人");
             GUILayout.EndHorizontal();
             GUILayout.EndVertical();
 
             GUILayout.BeginVertical("Box");
             GUILayout.BeginHorizontal();
-            settings.ignoreBlood = GUILayout.Toggle(settings.ignoreBlood, "功能4：允许血亲相恋（包括太吾行为、NPC行为、男媒女妁）");
+            GUILayout.Label("功能4：【小爱无疆】允许血亲相恋 (包括太吾行为、NPC行为、男媒女妁)");
+            GUILayout.FlexibleSpace();
+            settings.ignoreBlood = GUILayout.Toggle(settings.ignoreBlood, "");
             GUILayout.EndHorizontal();
             GUILayout.EndVertical();
 
             foreach (GameEvent gameEvent in GameEvent.All)
             {
                 GUILayout.BeginHorizontal();
-                GUILayout.Label(gameEvent.IsAdded ? 
-                    $"<color=#63CED0FF>{gameEvent.Name}事件注册成功</color>"
+                GUILayout.Label(gameEvent.Loaded
+                    ? $"<color=#63CED0FF>{gameEvent.Name}事件注册成功</color>"
                     : $"<color=#E4504DFF>{gameEvent.Name}事件注册失败</color>\n" + gameEvent.Log
                 );
                 GUILayout.EndHorizontal();
@@ -150,10 +176,18 @@ namespace GuiltyNature
             settings.Save(modEntry);
         }
     }
-
-    public static class Util
+    
+    static class Util
     {
-        public static void ShowTips(object text)
+        public static string Dit() => WindowManage.instance.Dit();
+        public static string Cut(int color = 20002) => WindowManage.instance.Cut(color);
+        public static string Color(int color, string s) => DateFile.instance.SetColoer(color, s);
+        public static string Color(int color, object s) => DateFile.instance.SetColoer(color, s.ToString());
+        public static string ColorName(string name) => Color(10002, name);
+        public static int ToInt(this string s) => Convert.ToInt32(s);
+        public static decimal ToDecimal(this string s) => decimal.Parse(s);
+
+        public static void Show(object text)
         {
             int id = -489819;
             var date = DateFile.instance.tipsMassageDate;
@@ -168,12 +202,10 @@ namespace GuiltyNature
             }
             TipsWindow.instance.SetTips(id, new string[] { text.ToString() }, 300);
         }
-        public static string ColorName(string name) => DateFile.instance.SetColoer(10002, name);
-        public static string GetActorName(int actorId, bool fullName = true, bool showGang = true)
+        public static string GetActorName(int actorId, bool fullName = false, bool showGang = false)
         {
             string actorName = DateFile.instance.GetActorName(actorId, fullName, false);
             if (!showGang) return actorName;
-
             int gang = DateFile.instance.GetActorDate(actorId, 19, false).ToInt();
             string gangName = DateFile.instance.GetGangDate(gang, 0);
             int num20 = DateFile.instance.GetActorDate(actorId, 20, false).ToInt();
@@ -181,18 +213,15 @@ namespace GuiltyNature
             grade = Mathf.Clamp(grade, 1, 9);
             int gangValueId = DateFile.instance.GetGangValueId(gang, 10 - grade);
             bool isMale = DateFile.instance.GetActorDate(actorId, 14) == "1";
-            int statusKey = num20 < 0 ? (isMale ? 1002 : 1003) : 1001;
-            string statusName = DateFile.instance.presetGangGroupDateValue[DateFile.instance.GetGangValueId(gang, num20)][statusKey];
-            statusName = DateFile.instance.SetColoer(20001 + grade, statusName, false);
+            int levelKey = num20 < 0 ? (isMale ? 1002 : 1003) : 1001;
+            string levelName = DateFile.instance.presetGangGroupDateValue[DateFile.instance.GetGangValueId(gang, num20)][levelKey];
+            levelName = DateFile.instance.SetColoer(20001 + grade, levelName, false);
 
-            return gangName + statusName + " " + actorName;
+            return gangName + levelName + " " + actorName;
         }
-        public static string Color(string text, int colorId) => $"{DateFile.instance.massageDate[colorId][0]}{text}</color>";
-        public static int ToInt(this string s) => Convert.ToInt32(s);
-        public static decimal ToDecimal(this string s) => decimal.Parse(s);
-    }//通用方法
+    }
 
-    public static class Reflection
+    static class Reflection
     {
         static MethodInfo aiCantMove = typeof(PeopleLifeAI).GetMethod("AICantMove", BindingFlags.NonPublic | BindingFlags.Instance);
         public static void AICantMove(int actorId)
@@ -207,7 +236,7 @@ namespace GuiltyNature
         }
     }//反射私有字段/方法
 
-    public static class ModDate
+    static class ModDate
     {
         public static string ModName = "GuiltyNature";
         public static string ququ = "ququ";
@@ -218,7 +247,7 @@ namespace GuiltyNature
         {
             if (Get(out var myModDict, suffix))
                 return myModDict.TryGetValue(key, out value);
-            value = "";
+            value = null;
             return false;
         }
         public static bool Get(out Dictionary<string, string> myModDict, string suffix)
@@ -231,12 +260,18 @@ namespace GuiltyNature
                 return false;
             }
             string key = ModName + suffix;
-            if (!modDict.ContainsKey(key))
+            string key2 = ModName + '/' + suffix;
+            if (!modDict.ContainsKey(key) && !modDict.ContainsKey(key2))
             {
-                modDict.Add(key, new Dictionary<string, string> { });
+                modDict[key2] = new Dictionary<string, string> { };
                 exist = false;
             }
-            myModDict = modDict[key];
+            else if (modDict.ContainsKey(key)) //改旧换新
+            {
+                modDict[key2] = modDict[key];
+                modDict.Remove(key);
+            }
+            myModDict = modDict[key2];
             return exist;
         }
         public static bool Add(string suffix, string key, string value)
@@ -278,83 +313,217 @@ namespace GuiltyNature
         }
     }//读写存档信息
 
-    public abstract class GameEvent
+    class DictProxy : IEnumerable<DictProxy.Tuple>
+    {
+        public Dictionary<int, Dictionary<int, string>> source;
+        public DictProxy(Dictionary<int, Dictionary<int, string>> source)
+        {
+            this.source = source;
+        }
+        public DictProxy()
+        {
+            source = new Dictionary<int, Dictionary<int, string>>();
+        }
+        public string this[int key1, int key2]
+        {
+            get
+            {
+                if (source.ContainsKey(key1) && source[key1].ContainsKey(key2))
+                {
+                    return source[key1][key2];
+                }
+                if (ThrowLevel > 0) throw new KeyNotFoundException($"{Name}[{key1}]" + (source.ContainsKey(key1) ? $"[{key2}]" : ""));
+                return null;
+            }
+            set
+            {
+                if (!source.ContainsKey(key1))
+                {
+                    if (ThrowLevel > 0) throw new KeyNotFoundException($"{Name}[{key1}]");
+                    source[key1] = new Dictionary<int, string>();
+                }
+                if (ThrowLevel > 1 && !source[key1].ContainsKey(key2)) throw new KeyNotFoundException($"{Name}[{key1}][{key2}]");
+                source[key1][key2] = value;
+            }
+        }
+        public Dictionary<int, string> this[int key]
+        {
+            get
+            {
+                if (source.ContainsKey(key)) return source[key];
+                if (ThrowLevel > 0) throw new KeyNotFoundException($"{Name}[{key}]");
+                return null;
+            }
+            set
+            {
+                if (ThrowLevel > 1 && !source.ContainsKey(key)) throw new KeyNotFoundException($"{Name}[{key}]");
+                source[key] = value;
+            }
+        }
+        public int ThrowLevel = 0; //0:不报错, 1:当尝试读取不存在的key时，2：当尝试读取或写入不存在的key时
+        public string Name = "";
+
+        public List<Tuple> AsList()
+        {
+            var result = new List<Tuple>();
+            foreach (var t in this)
+            {
+                result.Add(t);
+            }
+            return result;
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public IEnumerator<Tuple> GetEnumerator() => new Enumerator(source);
+
+        public class Enumerator : IEnumerator<Tuple>
+        {
+            readonly Dictionary<int, Dictionary<int, string>> source;
+            Dictionary<int, Dictionary<int, string>>.Enumerator e1;
+            Dictionary<int, string>.Enumerator e2;
+            bool empty;
+
+            internal Enumerator(Dictionary<int, Dictionary<int, string>> source)
+            {
+                this.source = source;
+                Reset();
+            }
+
+            object IEnumerator.Current
+            {
+                get => Current;
+            }
+
+            public Tuple Current
+            {
+                get
+                {
+                    var pair = e2.Current;
+                    return new Tuple
+                    {
+                        Key1 = e1.Current.Key,
+                        Key2 = pair.Key,
+                        Value = pair.Value,
+                    };
+                }
+            }
+
+            public bool MoveNext()
+            {
+                if (empty) return false;
+                while (!e2.MoveNext())
+                {
+                    if (!e1.MoveNext()) return false;
+                    e2 = e1.Current.Value.GetEnumerator();
+                }
+                return true;
+            }
+
+            public void Reset()
+            {
+                e1 = source.GetEnumerator();
+                empty = !e1.MoveNext();
+                if (!empty) e2 = e1.Current.Value.GetEnumerator();
+            }
+
+            public void Dispose() { }
+        }
+
+        public struct Tuple
+        {
+            public int Key1;
+            public int Key2;
+            public string Value;
+            public override string ToString()
+            {
+                return $"[{Key1},{Key2}]=\"{Value}\"";
+            }
+        }
+
+        public int NewKey(int seed = 0)
+        {
+            while (source.ContainsKey(seed)) seed++;
+            return seed;
+        }
+    }
+
+    abstract class GameEvent
     {
         public static List<GameEvent> All = new List<GameEvent>();
-
-        public static int Key(int key)
-        {
-            Main.DateKey = key;
-            return key;
-        }
         public enum DateTyp
         {
             Event,
             EnemyTeam
         }
-        public static Dictionary<int, Dictionary<int, string>> GetDate(DateTyp dt)
+        public static DictProxy GetDictP(DateTyp dt, int throwLevel = 1)
         {
-            Dictionary<int, Dictionary<int, string>> result;
+            Dictionary<int, Dictionary<int, string>> source;
+            string name;
             switch (dt)
             {
                 case DateTyp.Event:
-                    Main.DateName = "EventDate";
-                    result = DateFile.instance.eventDate;
+                    name = "EventDate";
+                    source = DateFile.instance.eventDate;
                     break;
                 default:
-                    Main.DateName = "EnemyTeamDate";
-                    result = DateFile.instance.enemyTeamDate;
+                    name = "EnemyTeamDate";
+                    source = DateFile.instance.enemyTeamDate;
                     break;
             }
-            if (result == null)
+            if (source == null)
             {
-                throw new NullReferenceException($"{Main.DateName} is null");
+                throw new NullReferenceException($"{name} is null");
             }
-            return result;
+            return new DictProxy(source)
+            {
+                ThrowLevel = throwLevel,
+                Name = name
+            };
         }
 
-        public abstract void Add();
-        public bool IsAdded;
+        public virtual void Load() { }
+        public bool Loaded;
         public string Log = "未曾执行加载"; // 用于记录加载成功或报错信息
         public string Name;
 
-        void TryAdd()
+        void TryLoad()
         {
-            if (IsAdded) return;
+            if (Loaded) return;
+            Log = "尝试执行加载";
             try
             {
-                Add();
+                Load();
             }
             catch (Exception e)
             {
-                string message = e.Message + '\n' + e.StackTrace;
                 if (e is KeyNotFoundException)
                 {
-                    string s3 = $"缺少数据: EventDate[{Main.DateKey}]";
-                    Log = s3;
+                    Log = $"缺少数据: {e.Message}\n{e.StackTrace}";
                 }
                 else
                 {
-                    Log = message;
+                    Log = e.Message + '\n' + e.StackTrace;
                 }
-                IsAdded = false;
+                Loaded = false;
                 return;
             }
-            IsAdded = true;
+            Log = "完成加载";
+            Loaded = true;
             return;
         }
-        public static void AddAll()
+        public static void LoadAll()
         {
             lock (DateFile.instance) //锁线程，防止与基础资源框架等同时运行
             {
-                QuquEvent.Instance.TryAdd();
-                RapedEvent.Instance.TryAdd();
-                ConfuseEvent.Instance.TryAdd();
+                QuquEvent.Instance.TryLoad();
+                RapedEvent.Instance.TryLoad();
+                ConfuseEvent.Instance.TryLoad();
             }
         }
     }
 
-    public class QuquEvent : GameEvent
+    class QuquEvent : GameEvent
     {
         static QuquEvent _instance;
         public static QuquEvent Instance
@@ -366,7 +535,7 @@ namespace GuiltyNature
                     _instance = new QuquEvent()
                     {
                         Name = "相人",
-                        IsAdded = false,
+                        Loaded = false,
                     };
                     All.Add(_instance);
                 }
@@ -374,72 +543,56 @@ namespace GuiltyNature
             }
         }
 
-        public override void Add()
+        public override void Load()
         {
-            var rows = GetDate(DateTyp.Event);
-            int newRowId = EventId;
-            while (rows.ContainsKey(newRowId)) newRowId++;
-            EventId = newRowId;
-            Dictionary<int, string> newRow = new Dictionary<int, string>(rows[Key(957300001)])
+            var eventData = GetDictP(DateTyp.Event);
+            EventId = eventData.NewKey(EventId);
+            //相人选项
+            eventData[EventId] = new Dictionary<int, string>(eventData[957300001])
             {
-                [0] = "相虫·相人",
                 [3] = "我看你倒是神采非凡，不如…？ <color=#8E8E8EFF>（掏出剑柄……）</color>",
                 [4] = "1",
-                [8] = $"END&{newRowId}"
-            };//相人选项
-            rows.Add(newRowId, newRow);
+                [8] = $"END&{EventId}"
+            };
+            //三种相虫失败
             foreach (int i in new int[] { 9574, 9575, 9576 })
             {
-                rows[Key(i)][5] = $"{newRowId}|" + rows[i][5];
-            }//三种相虫失败
-            if (Main.settings.ququEnabled) ChangeKillOption(true);
-            Log = $"注册相虫事件，id为{newRowId}\n";
+                eventData[i, 5] = $"{EventId}|" + eventData[i][5];
+            }
+
+            EventAlt = new DictProxy();
+            //袭击获胜，被袭击获胜，失心人救治失败
+            foreach (int i in new int[] { 917800001, 12400001, 17700001 })
+            {
+                EventAlt[i, 3] = "（将其化为促织……）";
+                EventAlt[i, 8] = $"END&{EventId}";
+            }
+            //失心人救治唯我选项
+            foreach (int i in new int[] { 25200005 })
+            {
+                EventAlt[i, 3] = "（将其化为促织……）";
+                EventAlt[i, 7] = "-1";
+                EventAlt[i, 8] = "GN&4|" + $"END&{EventId}";
+            }
+            enabled = false;
+            Switch();
             return;
         }
 
         public static int EventId = 957400009;
+        static DictProxy EventAlt;
+        static bool enabled;
+        
         public static void Switch()
         {
-            Main.settings.ququEnabled = !Main.settings.ququEnabled;
-            if (DateFile.instance == null) return;
-            ChangeKillOption(Main.settings.ququEnabled);
-        }
-        static void ChangeKillOption(bool forward)
-        {
-            var rows = GetDate(DateTyp.Event);
-            if (forward)
+            if (EventAlt == null) return;
+            if (enabled == (Main.enabled && Main.settings.ququEnabled)) return;
+            enabled = !enabled;
+            var rows = GetDictP(DateTyp.Event, 2);
+            foreach (var t in EventAlt.AsList())
             {
-                foreach (int i in new int[] { 917800001, 12400001, 17700001 })
-                {
-                    Key(i);
-                    rows[i][3] = "（将其化为促织……）";
-                    rows[i][8] = $"END&{EventId}";
-                }//袭击获胜，被袭击获胜，失心人救治失败
-                foreach (int i in new int[] { 25200005 })
-                {
-                    Key(i);
-                    rows[i][3] = "（将其化为促织……）";
-                    rows[i][7] = "-1";
-                    rows[i][8] = "GN&4|" + $"END&{EventId}";
-                }//失心人救治唯我选项
-            }
-            else
-            {
-                foreach (int i in new int[] { 917800001, 12400001 })
-                {
-                    rows[Key(i)][3] = "（取其性命！）";
-                }
-                rows[Key(917800001)][8] = "END&91781&1";
-                rows[Key(12400001)][8] = "END&1241&1";
-                rows[Key(17700001)][3] = "（放弃救治，取其性命！）";
-                rows[Key(17700001)][8] = "END&1241&1";
-                foreach (int i in new int[] { 25200005 })
-                {
-                    Key(i);
-                    rows[i][3] = "（为其了断……）";
-                    rows[i][7] = "257";
-                    rows[i][8] = "GN&4|END&2521&4";
-                }//失心人救治唯我选项
+                EventAlt[t.Key1, t.Key2] = rows[t.Key1, t.Key2];
+                rows[t.Key1, t.Key2] = t.Value;
             }
         }
 
@@ -505,23 +658,16 @@ namespace GuiltyNature
             GetQuquWindow.instance.MakeQuqu(itemId, colorId, partId);
             //名字信息
             string ququName = DateFile.instance.GetItemDate(itemId, 0, false);
-            string actorName = DateFile.instance.GetActorName(actorId);
-            int gang = DateFile.instance.GetActorDate(actorId, 19, false).ToInt();
-            string gangName = DateFile.instance.GetGangDate(gang, 0);
-            int gangValueId = DateFile.instance.GetGangValueId(gang, 10 - level);
-            string gangLevelName = DateFile.instance.presetGangGroupDateValue
-                [DateFile.instance.GetGangValueId(gang, num20)]
-                [num20 < 0 ? (isMale ? 1002 : 1003) : 1001];
-            gangLevelName = DateFile.instance.SetColoer(20001 + level, gangLevelName, false);
+            string actorFullName = Util.GetActorName(actorId, true, true);
             //记录蛐蛐
             string[] ququInfo =
             {
-                gangName + gangLevelName + " " + actorName,
+                actorFullName,
                 DateFile.instance.GetActorDate(actorId, 13, true), //蛐蛐寿命 = 人物健康上限
                 actorId.ToString(),
             };
             ModDate.Add(ModDate.ququ, itemId.ToString(), string.Join("|", ququInfo));
-            Main.Log($"{actorName}>>>{ququName}");
+            Main.Log($"{actorFullName}>>>{ququName}");
             //记录人
             string[] actorInfo =
             {
@@ -613,7 +759,7 @@ namespace GuiltyNature
         
     }//相虫相人
 
-    public class RapedEvent:GameEvent
+    class RapedEvent:GameEvent
     {
         static RapedEvent _instance;
         public static RapedEvent Instance
@@ -625,7 +771,7 @@ namespace GuiltyNature
                     _instance = new RapedEvent()
                     {
                         Name = "被欺侮",
-                        IsAdded = false,
+                        Loaded = false,
                     };
                     All.Add(_instance);
                 }
@@ -633,78 +779,74 @@ namespace GuiltyNature
             }
         }
 
-        public override void Add()
+        public override void Load()
         {
-            Log = "";
-            ShiftProb(Main.settings.moreRape);
-            var eventDate = GetDate(DateTyp.Event);
-            ID.menu0 = CheckEventId(ID.menu0);
-            ID.option1 = CheckEventId(ID.menu0 * 100000 + 1);
-            ID.option2 = CheckEventId(ID.option1 + 1);
-            ID.menu1 = CheckEventId(ID.menu1);
-            ID.option11 = CheckEventId(ID.menu1 * 100000 + 1);
-            ID.menu3 = CheckEventId(ID.menu3);
-            Dictionary<int, string> menu0_Date = new Dictionary<int, string>(eventDate[Key(201)])
+            Switch(Main.settings.moreRape);
+            var eventData = GetDictP(DateTyp.Event);
+            ID.menu0 = eventData.NewKey(ID.menu0);
+            ID.option1 = eventData.NewKey(ID.menu0 * 100000 + 1);
+            ID.option2 = eventData.NewKey(ID.option1 + 1);
+            ID.menu1 = eventData.NewKey(ID.menu1);
+            ID.option11 = eventData.NewKey(ID.menu1 * 100000 + 1);
+            ID.menu3 = eventData.NewKey(ID.menu3);
+            //遭遇欺侮
+            eventData[ID.menu0] = new Dictionary<int, string>(eventData[201])
             {
-                [0] = "遭遇欺侮",
                 [3] = "当MN行至偏僻无人之处时，D0忽然面色不善的拦住了MN的去路……\n在三言两语的交谈之后，D0终于言明：已无法抑制对MN的爱欲……",
                 [4] = "1",
                 [5] = $"{ID.option1}|{ID.option2}",
-            };//遭遇欺侮
-            eventDate.Add(ID.menu0, menu0_Date);
-            Dictionary<int, string> option1_Date = new Dictionary<int, string>(eventDate[Key(20100001)])
+            };
+            //任其宣泄
+            eventData[ID.option1] = new Dictionary<int, string>(eventData[20100001])
             {
                 [3] = "（任其宣泄……）",
                 [4] = "1",
                 [7] = $"{ID.menu1}",
                 [8] = $"END&{ID.option1}",
-            };//任其宣泄
-            eventDate.Add(ID.option1, option1_Date);
-            Dictionary<int, string> option2_Date = new Dictionary<int, string>(eventDate[Key(20100002)])
+            };
+            //恕难从命
+            eventData[ID.option2] = new Dictionary<int, string>(eventData[20100002])
             {
                 [4] = "1",
-            };//恕难从命
-            eventDate.Add(ID.option2, option2_Date);
-            Dictionary<int, string> menu1_Date = new Dictionary<int, string>(eventDate[Key(203)])
+            };
+            //被欺侮
+            eventData[ID.menu1] = new Dictionary<int, string>(eventData[203])
             {
-                [0] = "被欺侮",
                 [3] = "D0以卑劣手段欺侮了MN……",
                 [4] = "1",
                 [5] = $"20300001|20300002|20300003|20300004|20300005|{ID.option11}"
-            };//被欺侮
-            eventDate.Add(ID.menu1, menu1_Date);
-            Dictionary<int, string> option11_Date = new Dictionary<int, string>(eventDate[Key(922200001)])
+            };
+            //倾诉爱意
+            eventData[ID.option11] = new Dictionary<int, string>(eventData[922200001])
             {
                 [3] = "（倾诉爱意……）<color=#4B4B4BFF>（在剑柄的强迫下）</color>",
                 [8] = "END&90011&6"
-            };//倾诉爱意
-            eventDate.Add(ID.option11, option11_Date);
-            Dictionary<int, string> menu3_Date = new Dictionary<int, string>(eventDate[Key(115)])
+            };
+            //反抗失败
+            eventData[ID.menu3] = new Dictionary<int, string>(eventData[115]) 
             {
-                [0] = "反抗失败",
                 [3] = "MN试图反抗D0，但失败了……",
                 [5] = $"{ID.option1}",
-            };//反抗失败
-            eventDate.Add(ID.menu3, menu3_Date);
+            };
 
-            ID.menu2 = CheckEventId(ID.menu2);
-            ID.option21 = CheckEventId(ID.menu2 * 100000 + 1);
-            Dictionary<int, string> menu2_Date = new Dictionary<int, string>(eventDate[Key(124)])
+            ID.menu2 = eventData.NewKey(ID.menu2);
+            ID.option21 = eventData.NewKey(ID.menu2 * 100000 + 1);
+            //反抗欺侮获胜
+            eventData[ID.menu2] = new Dictionary<int, string>(eventData[124]) 
             {
-                [0] = "反抗欺侮获胜",
                 [5] = $"{ID.option21}|12400002"
-            };//反抗获胜
-            eventDate.Add(ID.menu2, menu2_Date);
-            Dictionary<int, string> option21_Date = new Dictionary<int, string>(eventDate[Key(900700001)])
+            };
+            //没收工具
+            eventData[ID.option21] = new Dictionary<int, string>(eventData[900700001])
             {
                 [3] = "（没收工具......）",
                 [8] = $"END&{ID.option21}"
-            };//没收工具
-            eventDate.Add(ID.option21, option21_Date);
+            };
+
             //战斗信息
-            var enemyTeamDate = GetDate(DateTyp.EnemyTeam);
-            while (enemyTeamDate.ContainsKey(ID.enemyTeam)) ID.enemyTeam++;
-            Dictionary<int, string> newRow = new Dictionary<int, string>(enemyTeamDate[Key(102)])
+            var enemyTeamData = GetDictP(DateTyp.EnemyTeam);
+            ID.enemyTeam = enemyTeamData.NewKey(ID.enemyTeam);
+            enemyTeamData[ID.enemyTeam] = new Dictionary<int, string>(enemyTeamData[102])
             {
                 [23] = "75",//血线
                 [98] = "1",//BGM
@@ -713,11 +855,9 @@ namespace GuiltyNature
                 [8] = "0",
                 [11] = "0"
             };
-            enemyTeamDate.Add(ID.enemyTeam, newRow);
-            Log += $"注册被欺侮战斗，id为{ID.enemyTeam}\n";
-            eventDate[ID.option2][8] = $"BAT&{ID.enemyTeam}&0";
+            eventData[ID.option2, 8] = $"BAT&{ID.enemyTeam}&0";
             
-            IsAdded = true;
+            Loaded = true;
         }
 
         static Sprite LoadSprite(string imageName)
@@ -725,7 +865,7 @@ namespace GuiltyNature
             string path = Path.Combine(Path.Combine(Main.resBasePath, Main.folderName), imageName);
             if (!File.Exists(path))
             {
-                Util.ShowTips($"图片路径[{path}]不存在");
+                Util.Show($"图片路径[{path}]不存在");
                 return null;
             }
             var fileData = File.ReadAllBytes(path);
@@ -752,7 +892,7 @@ namespace GuiltyNature
             public static int enticeOpiton = 900100008;
             public static int enticeMenu = 9388;
         }
-        public static void ShiftProb(bool add = true)
+        public static void Switch(bool add = true)
         {
             if (DateFile.instance == null) return;
             var goodnessDate = DateFile.instance.goodnessDate;
@@ -834,13 +974,6 @@ namespace GuiltyNature
             DateFile.instance.GetItem(DateFile.instance.mianActorId, itemId, 1, true, 0);
             DateFile.instance.SetActorMood(mainId, 140);
         }
-        int CheckEventId(int eventId)
-        {
-            var eventDate = DateFile.instance.eventDate;
-            while (eventDate.ContainsKey(eventId)) eventId++;
-            Log += $"注册被欺侮事件，id为{eventId}\n";
-            return eventId;
-        }
         public static void Cnt(int actorId, int add = 1)
         {
             string key = actorId.ToString();
@@ -897,7 +1030,7 @@ namespace GuiltyNature
         {
             static void Postfix(PeopleLifeAI __instance, int actorId)
             {
-                if (!Main.enabled || !Main.settings.rapedEnabled || !Instance.IsAdded) return;
+                if (!Main.enabled || !Main.settings.rapedEnabled || !Instance.Loaded) return;
                 bool trigglable = UIDate.instance.trunChangeBattleEnemys.Count <= 0 && !DateFile.instance.setNewMianActor && !DateFile.instance.doMapMoveing;
                 if (!trigglable || DateFile.instance.gameOver) return;
                 if (XX) return;
@@ -905,7 +1038,15 @@ namespace GuiltyNature
 
                 List<int> features = DateFile.instance.GetActorFeature(actorId);
                 bool disabled = (features.Contains(1001) || features.Contains(1002));
-                string actorName = DateFile.instance.GetActorName(actorId);
+                string actorName = actorId.ToString();
+                try
+                {
+                    actorName = DateFile.instance.GetActorName(actorId); //不知为何有人会报错
+                }
+                catch (Exception e)
+                {
+                    Main.Logger.Log($"获取人物姓名失败：{e.Message}");
+                }
                 int mianId = DateFile.instance.mianActorId;
                 int[] eventInfo = new int[]
                 {
@@ -1011,8 +1152,8 @@ namespace GuiltyNature
                                 }
                                 catch (Exception ex)
                                 {
-                                    Util.ShowTips("本错误不影响游戏进行，但请联系作者");
-                                    Util.ShowTips(Util.Color("恶性循环报错：" + ex.Message, 20010));
+                                    Util.Show("本错误不影响游戏进行，但请联系作者");
+                                    Util.Show(Util.Color(20010, "恶性循环报错：" + ex.Message));
                                     Main.Log(ex.Message);
                                     Main.Log(ex.StackTrace);
                                     return;
@@ -1052,8 +1193,8 @@ namespace GuiltyNature
                                 }
                                 catch (Exception ex)
                                 {
-                                    Util.ShowTips("本错误不影响游戏进行，但请联系作者");
-                                    Util.ShowTips(Util.Color("恶性循环报错：" + ex.Message, 20010));
+                                    Util.Show("本错误不影响游戏进行，但请联系作者");
+                                    Util.Show(Util.Color(20010, "恶性循环报错：" + ex.Message));
                                     Main.Log(ex.Message);
                                     Main.Log(ex.StackTrace);
                                     return;
@@ -1105,8 +1246,8 @@ namespace GuiltyNature
                 {
                     Winners.Add(actorId);
                     ModDate.Add(ModDate.CD, actorId.ToString(), "150");
-                    string name = Util.ColorName(Util.GetActorName(actorId, false, false));
-                    Util.ShowTips($"{name}的眼神似乎有点怪…");
+                    string name = Util.ColorName(Util.GetActorName(actorId));
+                    Util.Show($"{name}的眼神似乎有点怪…");
                     return true;
                 }
                 Losers.Add(actorId);
@@ -1119,7 +1260,7 @@ namespace GuiltyNature
         {
             static void Postfix(MessageEventManager __instance, int[] baseEventDate)
             {
-                if (!Main.enabled || !Main.settings.rapedEnabled || !RapedEvent.Instance.IsAdded) return;
+                if (!Main.enabled || !Main.settings.rapedEnabled || !RapedEvent.Instance.Loaded) return;
                 int eventId = baseEventDate[2];
                 bool isMenu0 = eventId == RapedEvent.ID.menu0;
                 bool isMenu1 = eventId == RapedEvent.ID.menu1;
@@ -1154,7 +1295,7 @@ namespace GuiltyNature
         }
     }//被欺侮
 
-    public class ConfuseEvent:GameEvent
+    class ConfuseEvent:GameEvent
     {
         static ConfuseEvent _instance;
         public static ConfuseEvent Instance
@@ -1166,7 +1307,7 @@ namespace GuiltyNature
                     _instance = new ConfuseEvent()
                     {
                         Name = "乱情瘴",
-                        IsAdded = false,
+                        Loaded = false,
                     };
                     All.Add(_instance);
                 }
@@ -1174,43 +1315,40 @@ namespace GuiltyNature
             }
         }
 
-        public override void Add()
+        public override void Load()
         {
-            Log = "";
-            var rows = GetDate(DateTyp.Event);
-            ID.option = CheckEventId(ID.option);
-            ID.input = CheckEventId(ID.option + 1);
-            ID.option1 = CheckEventId(ID.input + 1);
-            ID.menu1 = CheckEventId(ID.option1 + 1);
-            var option_Date = new Dictionary<int, string>(rows[Key(931300001)])
+            var eventData = GetDictP(DateTyp.Event);
+            ID.option = eventData.NewKey(ID.option);
+            ID.input = eventData.NewKey(ID.option + 1);
+            ID.option1 = eventData.NewKey(ID.input + 1);
+            ID.menu1 = eventData.NewKey(ID.option1 + 1);
+            // 选项
+            eventData[ID.option] = new Dictionary<int, string>(eventData[931300001])
             {
                 [3] = "（乱情瘴……）",
                 [6] = "GN&3|TIME&3",
                 [7] = $"{ID.input}"
             };
-            rows.Add(ID.option, option_Date);
-            var input_Date = new Dictionary<int, string>(rows[Key(9356)])
+            // 乱情瘴输入
+            eventData[ID.input] = new Dictionary<int, string>(eventData[9356])
             {
-                [0] = "乱情瘴输入",
                 [3] = "输入指定目标的姓名……",
                 [5] = $"{ID.option1}|900700001"
             };
-            rows.Add(ID.input, input_Date);
-            var option1_Date = new Dictionary<int, string>(rows[Key(935600001)])
+            // 确认输入
+            eventData[ID.option1] = new Dictionary<int, string>(eventData[935600001])
             {
                 [3] = "便是此人！<color=#4B4B4BFF>（消耗行动力：3）</color>",
                 [7] = $"{ID.menu1}",
                 [8] = $"TIME&3|END&{ID.option1}"
             };
-            rows.Add(ID.option1, option1_Date);
-            var menu1_Date = new Dictionary<int, string>(rows[Key(9357)])
+            // 完成
+            eventData[ID.menu1] = new Dictionary<int, string>(eventData[9357])
             {
-                [0] = "乱情瘴完成",
                 [3] = "啊…原来是ta么"
             };
-            rows.Add(ID.menu1, menu1_Date);
             
-            rows[Key(9005)][5] += $"|{ID.option}";
+            eventData[9005, 5] += $"|{ID.option}";
         }
 
         public const int GongfaId = 21202;
@@ -1221,17 +1359,10 @@ namespace GuiltyNature
             public static int option1 = 900500102;
             public static int menu1 = 900500103;
         }
-        int CheckEventId(int eventId)
-        {
-            var eventDate = DateFile.instance.eventDate;
-            while (eventDate.ContainsKey(eventId)) eventId++;
-            Log += $"注册乱情障事件，id为{eventId}\n";
-            return eventId;
-        }
         public static void EndEvent(int eventActor, string inputName)
         {
             int mianId = DateFile.instance.mianActorId;
-            string coloredEventActorName = Util.ColorName(DateFile.instance.GetActorName(eventActor));
+            string coloredEventActorName = Util.ColorName(Util.GetActorName(eventActor));
             string coloredInputName = Util.ColorName(inputName);
             int partId = DateFile.instance.mianPartId;
             int placeId = DateFile.instance.mianPlaceId;
@@ -1252,7 +1383,7 @@ namespace GuiltyNature
                         ModDate.Remove(ModDate.regular, eventActor.ToString());//移除恶性循环
                     }
                 }
-                Util.ShowTips($"{coloredEventActorName}与{coloredInputName}断绝了彼此的情爱。");
+                Util.Show($"{coloredEventActorName}与{coloredInputName}断绝了彼此的情爱。");
                 goto end;
             }
             //生情
@@ -1271,11 +1402,11 @@ namespace GuiltyNature
                         RapedEvent.Cnt(actorId);//叠一层恶性循环
                     }
                 }
-                Util.ShowTips($"{coloredEventActorName}对{coloredInputName}心生爱慕之情。");
+                Util.Show($"{coloredEventActorName}对{coloredInputName}心生爱慕之情。");
             }
             else
             {
-                Util.ShowTips($"没有名为{coloredInputName}的人。");
+                Util.Show($"没有名为{coloredInputName}的人。");
             }
 
             end:;
@@ -1298,7 +1429,7 @@ namespace GuiltyNature
     
     //Event条件
     [HarmonyPatch(typeof(MessageEventManager), "GetEventIF")]
-    public static class GuiltyNature_GetEventIF_Patch
+    static class GuiltyNature_GetEventIF_Patch
     {
         static bool Prefix(ref bool __result, int actorId, int eventActor, int eventId)
         {
@@ -1382,22 +1513,22 @@ namespace GuiltyNature
     }
 
     //加载eventDate
-    [HarmonyPatch(typeof(ArchiveSystem.LoadGame), "LoadReadonlyData")] //可通过ArchiveSystem.LoadGame.LoadedReadonlyData()判断只读数据加载完成
+    [HarmonyPatch(typeof(ArchiveSystem.LoadGame), "LoadReadonlyData")]
     [HarmonyPriority(Priority.Last)]
-    public static class GuiltyNature_LoadReadonlyData_Patch
+    static class GuiltyNature_LoadReadonlyData_Patch
     {
         static void Postfix()
         {
-            if (ArchiveSystem.LoadGame.LoadedReadonlyData()) 
+            if (ArchiveSystem.LoadGame.LoadedReadonlyData()) //只读数据加载完毕
             {
-                GameEvent.AddAll();
+                GameEvent.LoadAll();
             }
         }
     }
 
     //处理Event
     [HarmonyPatch(typeof(MessageEventManager), "EndEvent")]
-    public static class GuiltyNature_EndEvent_Patch
+    static class GuiltyNature_EndEvent_Patch
     {
         static bool Prefix(MessageEventManager __instance)
         {
@@ -1436,7 +1567,7 @@ namespace GuiltyNature
     }
     //蛐蛐信息显示人名
     [HarmonyPatch(typeof(DateFile), "GetItemDate")]
-    public static class GuiltyNature_GetItemDate_Patch
+    static class GuiltyNature_GetItemDate_Patch
     {
         static void Postfix(ref string __result, int id, int index, bool otherMassage)
         {
@@ -1456,7 +1587,7 @@ namespace GuiltyNature
     }
     //蛐蛐寿命
     [HarmonyPatch(typeof(GetQuquWindow), "GetQuquDate")]
-    public static class GuiltyNature_GetQuquDate_Patch
+    static class GuiltyNature_GetQuquDate_Patch
     {
         static bool Prefix(ref int __result, int itemId, int index)
         {
@@ -1476,7 +1607,7 @@ namespace GuiltyNature
     //化虫者头像显示为蛐蛐
     [HarmonyPatch(typeof(ActorFace), "UpdateFace")]
     [HarmonyPatch(new Type[] { typeof(int), typeof(int), typeof(int), typeof(int), typeof(int[]), typeof(int[]), typeof(int), typeof(bool), typeof(bool) })]
-    public static class GuiltyNature_UpdateFace_Patch
+    static class GuiltyNature_UpdateFace_Patch
     {
         static readonly Color NoColor = new Color(1f, 1f, 1f, 1f);
         static bool Prefix(ActorFace __instance, int actorId)
@@ -1514,7 +1645,7 @@ namespace GuiltyNature
     }
     //修改Event选项条件文本
     [HarmonyPatch(typeof(WindowManage), "WindowSwitch")]
-    public static class GuiltyNature_WindowSwitch_Patch
+    static class GuiltyNature_WindowSwitch_Patch
     {
         static void Postfix(WindowManage __instance, GameObject tips)
         {
@@ -1543,19 +1674,19 @@ namespace GuiltyNature
     }
     //婚恋无视血缘
     [HarmonyPatch(typeof(DateFile), "GetLifeDate")]
-    public static class GuiltyNature_GetLifeDate_Patch
+    static class GuiltyNature_GetLifeDate_Patch
     {
         static bool Prefix(int actorId, int socialTyp, ref int __result)
         {
             if (!Main.enabled || !Main.settings.ignoreBlood) return true;
             if (socialTyp != 601 && socialTyp != 602) return true;
-            if (!IsMatch()) return true;
+            if (!MatchStack()) return true;
 
             __result = actorId;
             return false;
         }
 
-        static bool IsMatch()
+        static bool MatchStack()
         {
             System.Diagnostics.StackTrace st = new System.Diagnostics.StackTrace(false);
             var frames = st.GetFrames();
@@ -1582,5 +1713,4 @@ namespace GuiltyNature
             return false;
         }
     }
-
 }

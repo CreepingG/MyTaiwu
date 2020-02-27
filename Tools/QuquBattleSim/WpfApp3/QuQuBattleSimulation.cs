@@ -18,16 +18,20 @@ public class QuQuBattleSimulation
         反击衰减 = weaken ? 5 : 0;
     }
 
+    public bool showDetail = false;
+    string detail = "";
+
     public string Report()
     {
         var name1 = battlers[0].Name;
         var name2 = battlers[1].Name;
         var result = ShowStartBattleState();
-        return $"{name1} vs {name2}, {(result.win ? name1 : name2)} 胜\n" +
-            $"计数：{Count[0]}, {Count[1]}, {Count[2]}\n" + 
-            $"结束状态\n" +
-            $"    {name1}：{battlers[0].PrintStatus()}\n" +
-            $"    {name2}：{battlers[1].PrintStatus()}\n";
+        return $"{name1} vs {name2}, {(result.win ? name1 : name2)} 胜\n"
+            + $"计数：{Count[0]}, {Count[1]}, {Count[2]}\n"
+            + $"结束状态\n"
+            + $"    {name1}：{battlers[0].PrintStatus()}\n"
+            + $"    {name2}：{battlers[1].PrintStatus()}\n"
+            + detail;
     }
 
     public struct BattleResult
@@ -47,6 +51,7 @@ public class QuQuBattleSimulation
         int level2 = battlers[1].Level;
         int colorId = battlers[0].ColorId;
         int colorId2 = battlers[1].ColorId;
+        Count = new int[3];
         if ((colorId != 0 && colorId2 == 0) || (level > level2 && level - level2 >= 6 && Random.Range(0, 100) < (level - level2) * 10))
         {
             return new BattleResult(true, QuquBattler.BattlerStatus.无牙无叫);
@@ -59,7 +64,6 @@ public class QuQuBattleSimulation
         {
             return new BattleResult(Random.Range(0, 2) == 0, QuquBattler.BattlerStatus.无牙无叫);
         }
-        Count = new int[3];
         QuquBattleLoop();
         return new BattleResult(battlers[1].IsDead, battlers[1].IsDead ? battlers[1].Status : battlers[0].Status);
     }
@@ -69,17 +73,18 @@ public class QuQuBattleSimulation
         do
         {
             Count[0]++;
+            if (showDetail) detail += $"回合{Count[0]}\n";
             int 我方气势 = battlers[0].气势;
             int 敌方气势 = battlers[1].气势;
             bool 我方先手;
             if (我方气势 > 敌方气势)
             {
-                battlers[1].GetDamage(2, 我方气势);
+                SetDamage(battlers[1], QuquBattler.DamageTyp.斗性, 我方气势);
                 我方先手 = Random.Range(0, 100) < 80;
             }
             else if (敌方气势 > 我方气势)
             {
-                battlers[0].GetDamage(2, 敌方气势);
+                SetDamage(battlers[0], QuquBattler.DamageTyp.斗性, 敌方气势);
                 我方先手 = Random.Range(0, 100) >= 80;
             }
             else
@@ -90,12 +95,22 @@ public class QuQuBattleSimulation
         } while (!battlers[0].IsDead && !battlers[1].IsDead);
     }
 
+    private void SetDamage(QuquBattler battler, QuquBattler.DamageTyp typ, int value = 0)
+    {
+        var change = battler.GetDamage(typ, value);
+        if (showDetail && typ!=QuquBattler.DamageTyp.属性)
+        {
+            detail += $"    {battler.Name} {typ}: {change[0]}>>{change[1]}\n";
+        }
+    }
+
     private void 普攻(bool 我方先手)
     {
         bool 我方进攻 = 我方先手;
         for (int i = 0; i < 2; i++)
         {
             Count[1]++;
+            if (showDetail) detail += $"  进攻{Count[1]}\n";
             QuquBattler 进攻者 = battlers[我方进攻 ? 0 : 1];
             QuquBattler 防守者 = battlers[我方进攻 ? 1 : 0];
             bool 触发暴击 = false;
@@ -141,17 +156,17 @@ public class QuQuBattleSimulation
                 int 击伤率 = 伤害来源.暴击率 + 伤害来源.击伤调整;
                 if (Random.Range(0, 100) < 击伤率)
                 {
-                    受伤者.GetDamage(3, 1);//耐久
+                    SetDamage(受伤者, QuquBattler.DamageTyp.耐久, 1);
                     if (Random.Range(0, 100) < 击伤率)
                     {
-                        受伤者.GetDamage(4);//残废
+                        SetDamage(受伤者, QuquBattler.DamageTyp.属性);
                     }
                 }
             }
-            受伤者.GetDamage(1, 耐力伤害);
+            SetDamage(受伤者, QuquBattler.DamageTyp.耐力, 耐力伤害);
             if (斗性伤害 > 0)
             {
-                受伤者.GetDamage(2, 斗性伤害);
+                SetDamage(受伤者, QuquBattler.DamageTyp.斗性, 斗性伤害);
             }
 
             if (受伤者.IsDead || !触发反击) return 是反击; //若本次不触发反击，缠斗结束

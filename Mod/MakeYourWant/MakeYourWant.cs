@@ -69,7 +69,7 @@ namespace MakeYourWant
         public static Settings settings;
         public static UnityModManager.ModEntry.ModLogger Logger;
         static readonly string[] AttackTypName = { "掷", "弹", "御", "劈", "刺", "撩",
-            "崩", "点", "拿", "音", "缠", "咒", "机", "药", "毒", "？" };
+            "崩", "点", "拿", "音", "缠", "咒", "机", "药", "毒", "扫" };
         static readonly string[] WeaponPowerName0 = { "破", "辟", "杀", "其他" };
         static readonly string[] WeaponPowerName1 = { "掌", "剑", "刀", "毒", "长鞭", "软兵", "暗器",
             "奇门", "魔音", "金", "木", "玉" };
@@ -397,12 +397,21 @@ namespace MakeYourWant
         static void Prefix()
         {
             if (!Main.enabled) return;
+
             bool lastWish = Main.settings.IMBA && Main.settings.lastWish;
             if (lastWish)
             {
                 DateFile.instance.makePower = true;
             }
+
             if (Main.settings.setMedicine && Main.medicineIds[0] == null) Main.MedicineSwitch();
+
+            // 应对玩家先打开制作面板，后开启mod的情况
+            bool noTime = Main.settings.IMBA && Main.settings.needNoTime;
+            if (noTime)
+            {
+                typeof(MakeSystem).GetField("useTime", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(MakeSystem.instance, 0);
+            }
         }
     }
     [HarmonyPatch(typeof(DateFile), "GetItemDate")]
@@ -411,8 +420,7 @@ namespace MakeYourWant
         static bool Prefix(DateFile __instance, ref string __result, ref int index)
         {
             if (!Main.enabled) return true;
-            bool needNoTime = Main.settings.IMBA && Main.settings.needNoTime;
-            if (needNoTime && index == 47)
+            if (index == 47 && Main.settings.IMBA && Main.settings.needNoTime)
             {
                 __result = "0";
                 return false;
@@ -537,6 +545,7 @@ namespace MakeYourWant
                         for (int i = 0; i < 6; i++)
                         {
                             newTyps[i] = Main.settings.AttackTyp[i].ToString();
+                            if (newTyps[i] == "15") newTyps[i] = "16";
                         }
                         if (!freeTyp)
                         {

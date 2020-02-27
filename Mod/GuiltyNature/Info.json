@@ -2,7 +2,7 @@
   "Id": "GuiltyNature",
   "DisplayName": "人性本恶",
   "Author": "东风有意",
-  "Version": "1.2.6",
+  "Version": "1.2.10",
   "AssemblyName": "GuiltyNature.dll",
   "EntryMethod": "GuiltyNature.Main.Load"
 }

@@ -144,7 +144,7 @@ namespace RobAll
                 }
             }
             if (itemCnt == 0) return "什么都没搜刮到";
-            return $"共搜刮了来自{victimCnt}位受害者的{itemCnt}件物品";
+            return $"共搜刮了来自{victimCnt}位受害者的{itemCnt}件物品，详见Logs";
         }
 
         static void ChangeItem(int actorId, int itemId, int itemNumber = 1)

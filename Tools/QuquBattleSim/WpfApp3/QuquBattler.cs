@@ -12,26 +12,39 @@
         存活, 无牙无叫, 耐力, 斗性, 耐久
     }
 
-    public void GetDamage(int typ, int value = 0)
+    public enum DamageTyp
     {
+        耐力, 斗性, 耐久, 属性
+    }
+
+    public int[] GetDamage(DamageTyp typ, int value = 0)
+    {
+        var result = new int[2];
         switch (typ)
         {
-            case 1:
+            case DamageTyp.耐力:
+                result[0] = Hp;
                 Hp -= value;
+                result[1] = Hp;
                 if (Hp <= 0) Status = BattlerStatus.耐力;
-                return;
-            case 2:
+                break;
+            case DamageTyp.斗性:
+                result[0] = Sp;
                 Sp -= value;
+                result[1] = Sp;
                 if (Sp <= 0) Status = BattlerStatus.斗性;
-                return;
-            case 3:
+                break;
+            case DamageTyp.耐久:
+                result[0] = Durability;
                 Durability -= value;
+                result[1] = Durability;
                 if (Durability <= 0) Status = BattlerStatus.耐久;
-                return;
-            case 4:
+                break;
+            case DamageTyp.属性:
                 AddInjury();
-                return;
+                break;
         }
+        return result;
     }
 
     public static QuquBattler Create(Item item)

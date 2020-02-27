@@ -14,32 +14,31 @@ using Newtonsoft.Json.Linq;
 
 namespace TaiwuDate
 {
-    public partial class Form1 : Form
+    public partial class RootForm : Form
     {
         Dictionary<int, JObject> ById;
         Dictionary<string, JObject> ByName;
         JObject[] All;
-        string Path = @"C:\taiwu\steamapps\common\The Scroll Of Taiwu\Backup\2.6.7\Item_Date.txt";
-        string OutputDir = @"D:\3D objects\太吾绘卷\wiki\上传\";
+        string SourcePath;
         int Length = 0;
 
-        public Form1()//初始化
+        public RootForm()//初始化
         {
             InitializeComponent();
         }
         
         string ItemName(JObject jo)
         {
-            string name = (string)jo["data0"];
+            string name = (string)jo["0"];
             int id = (int?)jo["id"] ?? 0;
             name = name.Replace("\n", "·").Replace("《", "").Replace("》", "");
             if (name == "血露")
             {
-                int level = (int?)jo["data8"] ?? 0;
+                int level = (int?)jo["8"] ?? 0;
                 string gradeText = "下·九品|中·八品|上·七品|奇·六品|秘·五品|极·四品|超·三品|绝·二品|神·一品".Split('|')[level - 1].Split(new string[] { "·" }, StringSplitOptions.RemoveEmptyEntries)[1];
                 name += $"({gradeText})";
             }
-            else if ((int?)jo["data4"] == 5) //图书
+            else if ((int?)jo["4"] == 5) //图书
             {
                 if (id == 5005) //义父的天枢玄机
                 {
@@ -47,10 +46,10 @@ namespace TaiwuDate
                 }
                 else
                 {
-                    if ((int?)jo["data31"] == 17) name += (int?)jo["data35"] == 1 ? "(手抄)" : "(真传)";
+                    if ((int?)jo["31"] == 17) name += (int?)jo["35"] == 1 ? "(手抄)" : "(真传)";
                 }
             }
-            else if ((int?)jo["data5"] == 36)//神兵
+            else if ((int?)jo["5"] == 36)//神兵
             {
                 var arr = name.Split(new string[] { "\\n" }, StringSplitOptions.RemoveEmptyEntries);
                 name = arr.Last();
@@ -94,7 +93,7 @@ namespace TaiwuDate
                 }
                 else
                 {
-                    keys[col] = "data" + rawKey;
+                    keys[col] = rawKey;
                 }
             }
             All = new JObject[lines.Length - 1];
@@ -105,39 +104,39 @@ namespace TaiwuDate
                 JObject jo = new JObject();
                 var line = lines[row].Split(',');
                 var id = int.Parse(line[idCol]);
-                for(int col = 0; col < line.Length; col++)
+                for (int col = 0; col < line.Length; col++)
                 {
                     var value = line[col];
                     var key = keys[col];
+                    if (SourcePath.Contains("GongFa_Date") && (key.ToInt() ?? 0) / 100 == 2) continue; //功法的[200+]用于记录临时数据
                     if (int.TryParse(value, out var intValue))
                     {
-                        if (intValue != 0) jo.Add(key, intValue);
+                        if (intValue != 0 || col == 0) jo.Add(key, intValue); //id例外
                     }
                     else if (double.TryParse(value, out var floatValue))
                     {
-                        if (floatValue != 0.0) jo.Add(key, floatValue);
+                        if (floatValue != .0) jo.Add(key, floatValue);
                     }
                     else
                     {
                         if (value != "Null" && value != "") jo.Add(key, value);
                     }
                 }
-                string name = Path.Contains("Item_Date") ? ItemName(jo) : (string)jo["data0"];
-                if (Path.Contains("Item_Date"))
+                string name = SourcePath.Contains("Item_Date") ? ItemName(jo) : (string)jo["0"];
+                if (SourcePath.Contains("Item_Date"))
                 {
                     jo.Add("pageName", name);
                 }
-                jo.Add("version", VERSION.Text);
                 All[row - 1] = jo;
                 ById[id] = jo;
-                if (name != "" && name != null) ByName[name] = jo;
+                if (!string.IsNullOrEmpty(name)) ByName[name] = jo;
             }
             return;
         }
 
         void Read(string path)
         {
-            Path = path;
+            SourcePath = path;
             Lines2JObject(ReadCsvLines(path));
             Length = All.Length;
             Print($"共{Length}项\r\n",false);
@@ -182,7 +181,7 @@ namespace TaiwuDate
         }
         private void DragEnter1(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop)) // 运行拖进来的是文件（而不是文本、图片之类的元素）
+            if (e.Data.GetDataPresent(DataFormats.FileDrop)) // 允许拖进来的是文件（而不是文本、图片之类的元素）
                 e.Effect = DragDropEffects.All; // 会改变拖动时的指针样式
             else e.Effect = DragDropEffects.None;
         }
@@ -193,24 +192,40 @@ namespace TaiwuDate
         {
             OutputBtn.Enabled = false;
             int cnt = 0;
-            Print("", false);
+            Print("正在输出...", false);
             foreach (JObject jo in All)
             {
                 int id = (int?)jo["id"]??0;
-                string fileName = ParseFileName($"{System.IO.Path.GetFileNameWithoutExtension(Path).Split('_')[0]}/{id}.json");
+                string fileName = ParseFileName($"{Path.GetFileNameWithoutExtension(SourcePath).Split('_')[0]}/{id}.json");
                 string content = jo.ToString();
-                Print($"{++cnt} / {Length}    {jo["pagename"]}    {fileName}\r\n");
-                SaveToFile(fileName, content);
+                if (!SaveToFile(fileName, content))
+                {
+                    Print("输出异常中断", false);
+                    goto end;
+                }
+                cnt++;
             }
+            Print("输出完成:" + cnt.ToString(), false);
+            end:
             OutputBtn.Enabled = true;
         }
 
-        void SaveToFile(string fileName, string massage, string folderName = "json")
+        bool SaveToFile(string fileName, string massage)
         {
-            /*string dir = OutputDir;
-            if (folderName != "") dir += folderName + @"\";
-            if (!System.IO.Directory.Exists(dir))//创建目录
-                System.IO.Directory.CreateDirectory(dir);*/
+            var path = OutputPath.Text;
+            try
+            {
+                if (!System.IO.Directory.Exists(path))//创建目录
+                    System.IO.Directory.CreateDirectory(path);
+            }
+            catch(Exception e)
+            {
+                MessageBox.Show(e.Message, "异常", MessageBoxButtons.OK);
+                return false;
+            }
+
+            if (!path.EndsWith("\\")) path += "\\";
+            fileName = path + fileName;
             FileStream file = new FileStream(fileName, FileMode.Create); //输出到exe所在目录
             if (file != null)
             {
@@ -219,6 +234,27 @@ namespace TaiwuDate
                 file.Flush();
                 file.Close();
             }
+            return true;
+        }
+
+        private void ChooseFolder_Click(object sender, EventArgs e)
+        {
+            folderBrowserDialog1.SelectedPath = OutputPath.Text;
+            if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
+            {
+                OutputPath.Text = folderBrowserDialog1.SelectedPath;
+            }
+        }
+    }
+
+    public static class Util
+    {
+        public static int? ToInt(this string s)
+        {
+            if(int.TryParse(s, out int n)){
+                return n;
+            }
+            return null;
         }
     }
 }

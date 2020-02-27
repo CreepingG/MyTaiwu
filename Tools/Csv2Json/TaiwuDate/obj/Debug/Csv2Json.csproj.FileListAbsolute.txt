@@ -12,3 +12,17 @@ D:\文档\GitHub\MyTaiwu\Tools\Csv2Json\TaiwuDate\obj\Debug\Csv2Json.csproj.Core
 D:\文档\GitHub\MyTaiwu\Tools\Csv2Json\TaiwuDate\obj\Debug\Csv2Json.csproj.CopyComplete
 D:\文档\GitHub\MyTaiwu\Tools\Csv2Json\TaiwuDate\obj\Debug\TaiwuDate.exe
 D:\文档\GitHub\MyTaiwu\Tools\Csv2Json\TaiwuDate\obj\Debug\TaiwuDate.pdb
+D:\GitHub\MyTaiwu\Tools\Csv2Json\TaiwuDate\bin\Debug\TaiwuDate.exe.config
+D:\GitHub\MyTaiwu\Tools\Csv2Json\TaiwuDate\bin\Debug\TaiwuDate.exe
+D:\GitHub\MyTaiwu\Tools\Csv2Json\TaiwuDate\bin\Debug\TaiwuDate.pdb
+D:\GitHub\MyTaiwu\Tools\Csv2Json\TaiwuDate\bin\Debug\Newtonsoft.Json.dll
+D:\GitHub\MyTaiwu\Tools\Csv2Json\TaiwuDate\bin\Debug\Newtonsoft.Json.xml
+D:\GitHub\MyTaiwu\Tools\Csv2Json\TaiwuDate\obj\Debug\Csv2Json.csprojAssemblyReference.cache
+D:\GitHub\MyTaiwu\Tools\Csv2Json\TaiwuDate\obj\Debug\Csv2Json.csproj.ResolveComReference.cache
+D:\GitHub\MyTaiwu\Tools\Csv2Json\TaiwuDate\obj\Debug\TaiwuDate.Properties.Resources.resources
+D:\GitHub\MyTaiwu\Tools\Csv2Json\TaiwuDate\obj\Debug\Csv2Json.csproj.GenerateResource.cache
+D:\GitHub\MyTaiwu\Tools\Csv2Json\TaiwuDate\obj\Debug\Csv2Json.csproj.CoreCompileInputs.cache
+D:\GitHub\MyTaiwu\Tools\Csv2Json\TaiwuDate\obj\Debug\Csv2Json.csproj.CopyComplete
+D:\GitHub\MyTaiwu\Tools\Csv2Json\TaiwuDate\obj\Debug\TaiwuDate.exe
+D:\GitHub\MyTaiwu\Tools\Csv2Json\TaiwuDate\obj\Debug\TaiwuDate.pdb
+D:\GitHub\MyTaiwu\Tools\Csv2Json\TaiwuDate\obj\Debug\TaiwuDate.RootForm.resources
