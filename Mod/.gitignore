@@ -337,4 +337,4 @@ Properties
 *.exe
 *.sln
 build
-.zip
+*.zip
