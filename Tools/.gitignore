@@ -1,6 +1,8 @@
 *.lnk
 .vs/
-obj/Debug/
-*.cache
+Debug/
 *.zip
+*.rar
 *.ide
+*.xlsx
+**/packages/*/
