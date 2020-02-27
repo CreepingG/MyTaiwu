@@ -1,0 +1,30 @@
+$size: 5px;
+
+.curvedarrow {
+	position: absolute;
+  left: 112px;
+  top: -10px;
+}
+.curvedarrow:before {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-top: $size*6 solid transparent;
+  border-right: $size*6 solid red;
+  transform: skew(15deg,15deg);
+  left:$size*2;
+}
+.curvedarrow:after {
+  content: "";
+  position: absolute;
+  border: 0 solid transparent;
+  border-top: $size*3 solid red;
+  border-left: $size*3 solid red;
+  border-radius: $size*20 0 $size*20 0;
+  top: $size*-4;
+  left: $size*-11;
+  width: $size*12;
+  height: $size*12;
+  transform: rotate(40deg);
+}
