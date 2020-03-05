@@ -30,37 +30,24 @@ namespace MakeYourWant
         public bool SetWeapon = false;
         public bool WeaponMoreDuration = false;
         public bool AttackTypExtend = false;
-        public int[] AttackTyp = new int[6] {15,15,15,15,15,15};//式
-        public int WeaponPower0 = 3;//词条
-        public int WeaponPower1 = 0;
-        public int WeaponPower2 = 0;
-        public int WeaponPower3 = 5;
-        public bool WeaponPowerMustBe = false;//必出
+        public int[] AttackTyp = {15,15,15,15,15,15};//式
+        public int[] WeaponPower = { 3, 0, 0, 5 };
         public int WeaponEngraving = 0;//功法发挥
-	    public bool WeaponEngravingMustBe = false;
         //防具
         public bool SetArmor = false;
         public int ArmorPower = 0;
-        public bool ArmorPowerMustBe = false;
         public int ArmorAttr = 0;
-        public bool ArmorAttrMustBe = false;
         //饰品
         public bool SetJewelry = false;
         public bool JewelryPowerMustBe = false;
-        public int JewelryAttr0 = 0;
-        public int JewelryAttr1 = 0;
-        public int JewelryAttr2 = 0;
-        public bool JewelryAttrMustBe = false;
+        public int[] JewelryAttr = { 0, 0, 0 };
         //食物
         public bool SetFood = false;
-        public int FoodAttr0 = 0;
-        public int FoodAttr1 = 0;
-        public int FoodAttr2 = 0;
-        public bool FoodAttrMustBe = false;
+        public int[] FoodAttr = { 0, 0, 0 };
         //药品
         public bool setMedicine = false;
 
-        public bool[] SetEnaled = new bool[5] { false, false, false, false, false };
+        public bool[] SetEnaled = { false, false, false, false, false };
     }
 
     public static class Main
@@ -68,21 +55,57 @@ namespace MakeYourWant
         public static bool enabled;
         public static Settings settings;
         public static UnityModManager.ModEntry.ModLogger Logger;
-        static readonly string[] AttackTypName = { "掷", "弹", "御", "劈", "刺", "撩",
-            "崩", "点", "拿", "音", "缠", "咒", "机", "药", "毒", "扫" };
-        static readonly string[] WeaponPowerName0 = { "破", "辟", "杀", "其他" };
-        static readonly string[] WeaponPowerName1 = { "掌", "剑", "刀", "毒", "长鞭", "软兵", "暗器",
-            "奇门", "魔音", "金", "木", "玉" };
-        static readonly string[] WeaponPowerName2 = { "武器杀", "材质杀" };
-        static readonly string[] WeaponPowerName3 = { "厚重", "轻盈", "锋锐", "钝拙", "贵重", "随机" };
-        static readonly string[] WeaponEngravingName = { "随机", "力道", "精妙", "迅疾" };
+        static string[] attackTypName;
+        static string[] attackTypId;
+        static string[] AttackTypName
+        {
+            get
+            {
+                if (attackTypName == null)
+                {
+                    attackTypName = DateFile.instance.attackTypDate
+                        .Select(kvp => kvp.Value).Where(v => v[1] != "0").Select(v => v[0])
+                        .Add("?").ToArray();
+                    attackTypId = DateFile.instance.attackTypDate
+                        .Where(kvp => kvp.Value[1] != "0").Select(kvp => kvp.Key.ToString())
+                        .Add("").ToArray();
+                }
+                return attackTypName;
+            }
+        }
+        public static string[] AttackTypId
+        {
+            get
+            {
+                if (attackTypName == null)
+                {
+                    attackTypName = DateFile.instance.attackTypDate
+                        .Select(kvp => kvp.Value).Where(v => v[1] != "0").Select(v => v[0])
+                        .Add("?").ToArray();
+                    attackTypId = DateFile.instance.attackTypDate
+                        .Where(kvp => kvp.Value[1] != "0").Select(kvp => kvp.Key.ToString())
+                        .Add("").ToArray();
+                }
+                return attackTypId;
+            }
+        }
+        static readonly string[][] WeaponPowerName = {
+            new string[] { "破", "辟", "杀", "其他" },
+            new string[] { "掌", "剑", "刀", "毒", "长鞭", "软兵", "暗器",
+            "奇门", "魔音", "金", "木", "玉" },
+            new string[] { "武器杀", "材质杀" },
+            new string[] { "厚重", "轻盈", "锋锐", "钝拙", "贵重", "随机" }
+        };
+        static readonly string[] WeaponEngravingName = { "随机", "力道", "精妙", "迅疾", "内息" };
         static readonly string[] ArmorPowerName = { "随机", "不变", "厚重", "轻盈", "藏锋", "百折", "贵重" };
         static readonly string[] ArmorAttrName = { "随机", "膂力", "体质", "灵敏", "根骨", "悟性", "定力" };
-        static readonly string[] AttrName0 = { "随机", "技艺", "武学" };
-        static readonly string[] AttrName1 = { "音律", "弈棋", "诗书", "绘画",
-            "术数", "品鉴", "锻造", "制木", "医术", "毒术", "织锦", "巧匠", "道法", "佛学", "厨艺", "杂学" };
-        static readonly string[] AttrName2 = { "内功", "身法", "绝技", "拳掌",
-            "指法", "腿法", "暗器", "剑法", "刀法", "长兵", "奇门", "软兵", "御射", "乐器" };
+        static readonly string[][] AttrName = {
+            new string[] { "随机", "技艺", "武学" },
+            new string[] { "音律", "弈棋", "诗书", "绘画", "术数", "品鉴", "锻造", "制木",
+                "医术", "毒术", "织锦", "巧匠", "道法", "佛学", "厨艺", "杂学" },
+            new string[] { "内功", "身法", "绝技", "拳掌", "指法", "腿法", "暗器",
+                "剑法", "刀法", "长兵", "奇门", "软兵", "御射", "乐器" }
+        };
         static readonly string[] PoisonName = { "烈毒", "郁毒", "寒毒", "赤毒", "腐毒", "幻毒" };
 
 
@@ -106,10 +129,18 @@ namespace MakeYourWant
 
         static void OnGUI(UnityModManager.ModEntry modEntry)
         {
+            if (!ArchiveSystem.LoadGame.LoadedReadonlyData())
+            {
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("等待游戏数据加载完成", new GUILayoutOption[0]);
+                GUILayout.EndHorizontal();
+                return;
+            }
+
             GUILayout.BeginHorizontal();
             GUILayout.Label("<color=#F28234FF>跨月制作的装备在投入材料时决定</color>", new GUILayoutOption[0]);
             GUILayout.EndHorizontal();
-            
+
             GUILayout.BeginHorizontal("Box");
             settings.SetWeapon = GUILayout.Toggle(settings.SetWeapon, "定制武器", new GUILayoutOption[0]);
             GUILayout.EndHorizontal();
@@ -123,51 +154,33 @@ namespace MakeYourWant
                     s[i] = AttackTypName[settings.AttackTyp[i]];
                 }
                 GUILayout.Label(string.Concat("<size=15>",string.Join("|",s),"</size>"), GUILayout.Width(150));
-                bool flag = GUILayout.Button((settings.AttackTypExtend ? "收起" : "展开"), GUILayout.Width(100));
-                GUILayout.Label("<color=#E4504DFF>不会产生武器没有的式</color>", GUILayout.Width(210));
-                settings.WeaponMoreDuration = GUILayout.Toggle(settings.WeaponMoreDuration, "较高耐久", new GUILayoutOption[0]);
-                if (flag)
+                if (GUILayout.Button((settings.AttackTypExtend ? "收起" : "展开"), GUILayout.Width(100)))
                 {
                     settings.AttackTypExtend = !settings.AttackTypExtend;
                 }
+                GUILayout.Label("<color=#E4504DFF>不会产生武器没有的式</color>", GUILayout.Width(210));
+                settings.WeaponMoreDuration = GUILayout.Toggle(settings.WeaponMoreDuration, "较高耐久", new GUILayoutOption[0]);
                 GUILayout.EndHorizontal();
                 if (settings.AttackTypExtend)
                 {
                     for (int i = 0; i < 6; i++)
                     {
                         GUILayout.BeginHorizontal();
-                        settings.AttackTyp[i] = GUILayout.SelectionGrid(settings.AttackTyp[i], AttackTypName, 16);
+                        settings.AttackTyp[i] = GUILayout.SelectionGrid(settings.AttackTyp[i], AttackTypName, AttackTypName.Length);
                         GUILayout.EndHorizontal();
                     }
                 }
 	            GUILayout.BeginHorizontal();
 	            GUILayout.Label("词条", GUILayout.Width(100));
-                settings.WeaponPower0 = GUILayout.SelectionGrid(settings.WeaponPower0, WeaponPowerName0, 4);
-                //GUILayout.FlexibleSpace();
-                settings.WeaponPowerMustBe = GUILayout.Toggle(settings.WeaponPowerMustBe, "必出", new GUILayoutOption[0]);
+                settings.WeaponPower[0] = GUILayout.SelectionGrid(settings.WeaponPower[0], WeaponPowerName[0], 4);
 		        GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
-                if (settings.WeaponPower0 == 2)
-                {
-                    settings.WeaponPower2 = GUILayout.SelectionGrid(settings.WeaponPower2, WeaponPowerName2, 2);
-                }
-                else
-                {
-                    if (settings.WeaponPower0 == 3)
-                    {
-                        settings.WeaponPower3 = GUILayout.SelectionGrid(settings.WeaponPower3, WeaponPowerName3, 6);
-                    }
-                    else
-                    {
-                        settings.WeaponPower1 = GUILayout.SelectionGrid(settings.WeaponPower1, WeaponPowerName1, 12);
-                    }
-                }
+                var index = settings.WeaponPower[0]==0 ? 1 : settings.WeaponPower[0];
+                settings.WeaponPower[index] = GUILayout.SelectionGrid(settings.WeaponPower[index], WeaponPowerName[index], WeaponPowerName[index].Length);
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
 	            GUILayout.Label("功法发挥", GUILayout.Width(100));
-                settings.WeaponEngraving = GUILayout.SelectionGrid(settings.WeaponEngraving, WeaponEngravingName, 4);
-                //GUILayout.FlexibleSpace();
-                settings.WeaponEngravingMustBe = GUILayout.Toggle(settings.WeaponEngravingMustBe, "必出", new GUILayoutOption[0]);
+                settings.WeaponEngraving = GUILayout.SelectionGrid(settings.WeaponEngraving, WeaponEngravingName, 5);
 	            GUILayout.EndHorizontal();
 		    }
             
@@ -179,14 +192,10 @@ namespace MakeYourWant
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("词条", GUILayout.Width(100));
                 settings.ArmorPower = GUILayout.SelectionGrid(settings.ArmorPower, ArmorPowerName, 7);
-                //GUILayout.FlexibleSpace();
-                settings.ArmorPowerMustBe = GUILayout.Toggle(settings.ArmorPowerMustBe, "必出", new GUILayoutOption[0]);
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("额外属性", GUILayout.Width(100));
                 settings.ArmorAttr = GUILayout.SelectionGrid(settings.ArmorAttr, ArmorAttrName, 7);
-                //GUILayout.FlexibleSpace();
-                settings.ArmorAttrMustBe = GUILayout.Toggle(settings.ArmorAttrMustBe, "必出", new GUILayoutOption[0]);
                 GUILayout.EndHorizontal();
             }
             
@@ -197,22 +206,17 @@ namespace MakeYourWant
             {
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("词条", GUILayout.Width(100));
-                //GUILayout.FlexibleSpace();
                 settings.JewelryPowerMustBe = GUILayout.Toggle(settings.JewelryPowerMustBe, "必出贵重", new GUILayoutOption[0]);
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("额外属性", GUILayout.Width(100));
-                settings.JewelryAttr0 = GUILayout.SelectionGrid(settings.JewelryAttr0, AttrName0, 3);
-                //GUILayout.FlexibleSpace();
-                settings.JewelryAttrMustBe = GUILayout.Toggle(settings.JewelryAttrMustBe, "必出", new GUILayoutOption[0]);
+                settings.JewelryAttr[0] = GUILayout.SelectionGrid(settings.JewelryAttr[0], AttrName[0], 3);
                 GUILayout.EndHorizontal();
-                if (settings.JewelryAttr0 != 0)
+                var index = settings.JewelryAttr[0];
+                if (index != 0)
                 {
                     GUILayout.BeginHorizontal();
-                    if(settings.JewelryAttr0==1)
-                        settings.JewelryAttr1 = GUILayout.SelectionGrid(settings.JewelryAttr1, AttrName1, 8);
-                    else
-                        settings.JewelryAttr2 = GUILayout.SelectionGrid(settings.JewelryAttr2, AttrName2, 7);
+                    settings.JewelryAttr[index] = GUILayout.SelectionGrid(settings.JewelryAttr[index], AttrName[index], AttrName[index].Length / 2);
                     GUILayout.EndHorizontal();
                 }
             }
@@ -224,16 +228,13 @@ namespace MakeYourWant
             {
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("额外属性", GUILayout.Width(100));
-                settings.FoodAttr0 = GUILayout.SelectionGrid(settings.FoodAttr0, AttrName0, 3);
-                settings.FoodAttrMustBe = GUILayout.Toggle(settings.FoodAttrMustBe, "必出", new GUILayoutOption[0]);
+                settings.FoodAttr[0] = GUILayout.SelectionGrid(settings.FoodAttr[0], AttrName[0], 3);
                 GUILayout.EndHorizontal();
-                if (settings.FoodAttr0 != 0)
+                var index = settings.FoodAttr[0];
+                if (index != 0)
                 {
                     GUILayout.BeginHorizontal();
-                    if (settings.FoodAttr0 == 1)
-                        settings.FoodAttr1 = GUILayout.SelectionGrid(settings.FoodAttr1, AttrName1, 8);
-                    else
-                        settings.FoodAttr2 = GUILayout.SelectionGrid(settings.FoodAttr2, AttrName2, 7);
+                    settings.FoodAttr[index] = GUILayout.SelectionGrid(settings.FoodAttr[index], AttrName[index], AttrName[index].Length / 2);
                     GUILayout.EndHorizontal();
                 }
             }
@@ -339,7 +340,7 @@ namespace MakeYourWant
                             Main.Logger.Log($"{log} => {GetItemName(bestId)}");
                         }
                     }
-                    catch (System.Exception ex)
+                    catch (Exception)
                     {
                         Main.Logger.Log(oldStr);
                     }
@@ -441,12 +442,12 @@ namespace MakeYourWant
         {
             if (!Main.enabled) return true;//mod未开启
             var presetItem = __instance.presetitemDate[presetItemId];
-            int itemTyp = int.Parse(presetItem[5]);
-            int equipTyp = int.Parse(presetItem[1]);//1武器，2防具，3饰品
+            int itemTyp = presetItem[5].ParseInt();
+            int equipTyp = presetItem[1].ParseInt();//1武器，2防具，3饰品
             bool isFood = itemTyp == 34 || itemTyp == 35;
             if (isFood)//食物
             {
-                if (int.Parse(presetItem[6]) == 1) return true;//可堆叠，是野果
+                if (presetItem[6].ParseInt() == 1) return true;//可堆叠，是野果
                 if (!Main.settings.SetFood) return true;
             }
             else
@@ -457,7 +458,7 @@ namespace MakeYourWant
                     (equipTyp == 3 && !Main.settings.SetJewelry)) return true;//装备类型对应选项未开启
                 if (itemTyp == 42) return true;//排除奇书宝典
                 if (itemTyp == 36) return true;//排除神兵
-                if (itemTyp == 21 || int.Parse(presetItem[31]) > 0) return true;//排除书籍
+                if (itemTyp == 21 || presetItem[31].ParseInt() > 0) return true;//排除书籍
             }
             if (!Main.settings.IMBA || !Main.settings.global)//仅对玩家制造的物品生效
             {
@@ -479,8 +480,9 @@ namespace MakeYourWant
                 newItemId = __instance.newItemId;
             }
             newItem[999] = presetItemId.ToString();//物品类型id
-            bool isFixed = int.Parse(presetItem[902]) <= 0;
-            int duration = Mathf.Abs(int.Parse(presetItem[902]));
+            int duration = presetItem[902].ParseInt();
+            bool isFixed = duration <= 0;
+            duration = duration.Abs();
             var seed = DateFile.instance.randSeed;
             //毒素
             if (Main.settings.IMBA && Main.settings.changePoison)
@@ -498,20 +500,19 @@ namespace MakeYourWant
                 duration = isFixed ? duration : 1 + duration * seed.Next(minimum, 101) / 100;
                 newItem[902] = duration.ToString();//最大耐久
                 newItem[901] = duration.ToString();//当前耐久
-                if (Main.settings.FoodAttrMustBe || seed.Next(0, 100) < buffObbs)
+                if (Main.settings.FoodAttr[0] != 0 || seed.Next(0, 100) < buffObbs)
                 {
-                    int attrTyp;
-                    if (Main.settings.FoodAttr0 == 0) attrTyp = (seed.Next(0, 100) < 50) ?
-                            seed.Next(0, 16) + 50501 : seed.Next(0, 14) + 50601;
-                    else
-                    {
-                        if (Main.settings.FoodAttr0 == 1) attrTyp = Main.settings.FoodAttr1 + 50501;
-                        else attrTyp = Main.settings.FoodAttr2 + 50601;
-                    }
-                    newItem[attrTyp] = (Mathf.Max(int.Parse(presetItem[8]) / 2, 1) * 20).ToString();
+                    int attrTyp = Main.settings.FoodAttr[0] != 0
+                        ? Main.settings.FoodAttr[0] == 1
+                            ? Main.settings.FoodAttr[1] + 50501
+                            : Main.settings.FoodAttr[2] + 50601
+                        : (seed.Next(0, 100) < 50)
+                            ? seed.Next(0, 16) + 50501
+                            : seed.Next(0, 14) + 50601;
+                    newItem[attrTyp] = (Mathf.Max(presetItem[8].ParseInt() / 2, 1) * 20).ToString();
                 }
-                goto ret;
             }
+            //装备
             else
             {
                 if (Main.settings.IMBA && Main.settings.传家宝)
@@ -538,34 +539,30 @@ namespace MakeYourWant
                     newItem[901] = duration.ToString();//当前耐久
                     //式
                     bool freeTyp = Main.settings.IMBA && Main.settings.freeTyp;
-                    if (freeTyp || int.Parse(presetItem[606]) > 0)
+                    if (freeTyp || presetItem[606].ParseInt() > 0)
                     {
                         string attackTypText = "";
-                        string[] newTyps = new string[6];
+                        var newTyps = new string[6];
                         for (int i = 0; i < 6; i++)
                         {
-                            newTyps[i] = Main.settings.AttackTyp[i].ToString();
-                            if (newTyps[i] == "15") newTyps[i] = "16";
+                            newTyps[i] = Main.AttackTypId[Main.settings.AttackTyp[i]];
                         }
+                        List<string> presetTyps = new List<string>(presetItem[7].Split('|'));
                         if (!freeTyp)
                         {
-                            List<string> presetTyps = new List<string>(presetItem[7].Split('|'));
                             for (int i = 0; i < 6; i++)
                             {
-                                string typ = newTyps[i];
-                                if (presetTyps.Contains(typ))
-                                    presetTyps.Remove(typ);
+                                if (presetTyps.Contains(newTyps[i])) presetTyps.Remove(newTyps[i]);
                                 else newTyps[i] = "";
                             }
-                            int count = presetTyps.Count;
-                            for(int i = 0; i < 6; i++)
+                        }
+                        for (int i = 0; i < 6; i++)
+                        {
+                            if (newTyps[i] == "")
                             {
-                                if (newTyps[i] == "")
-                                {
-                                    string typ = presetTyps[seed.Next(0, presetTyps.Count)];
-                                    newTyps[i] = typ;
-                                    presetTyps.Remove(typ);
-                                }
+                                string typ = presetTyps.Random();
+                                newTyps[i] = typ;
+                                presetTyps.Remove(typ);
                             }
                         }
                         attackTypText = string.Join("|", newTyps);
@@ -577,9 +574,13 @@ namespace MakeYourWant
                         newItem[10] = Main.settings.rate.ToString();
                     }
                     //功法发挥
-                    if (Main.settings.WeaponEngravingMustBe || seed.Next(0, 100) < buffObbs)
+                    if (Main.settings.WeaponEngraving != 0 || seed.Next(0, 100) < buffObbs)
                     {
-                        int carving = Main.settings.WeaponEngraving == 0 ? (seed.Next(0, 3) + 1) : Main.settings.WeaponEngraving;
+                        int carving = Main.settings.WeaponEngraving;
+                        if (carving == 0)
+                        {
+                            carving = seed.Next(1, 4);
+                        }
                         if (buffObbs == 999)
                         {
                             carving *= 100;
@@ -587,81 +588,78 @@ namespace MakeYourWant
                         newItem[505] = carving.ToString();
                     }
                     //词条
-                    int power = int.Parse(presetItem[504]);
-                    if (Main.settings.WeaponPowerMustBe || (power != 0 && seed.Next(0, 100) < sBuffObbs))
+                    int power = presetItem[504].ParseInt();
+                    if ((Main.settings.WeaponPower[0] != 3 || Main.settings.WeaponPower[3] != 5) || (power != 0 && seed.Next(0, 100) < sBuffObbs))
                     {
-                        if (Main.settings.WeaponPower0 == 3)//其他
+                        if (Main.settings.WeaponPower[0] == 3)//其他
                         {
-                            if (Main.settings.WeaponPower3 == 5)//随机
+                            if (Main.settings.WeaponPower[3] == 5)//随机
                             {
                                 List<int> powerList = new List<int>
-                                    {
-                                        2,
-                                        3,
-                                        4,
-                                        5,
-                                        6,
-                                        7,
-                                        8,
-                                        9,
-                                        10,
-                                        11,
-                                        12,
-                                        13,
-                                        101,
-                                        102,
-                                        103,
-                                        104,
-                                        105,
-                                        106,
-                                        107,
-                                        108,
-                                        109,
-                                        110,
-                                        111,
-                                        112,
-                                        401,
-                                        402,
-                                        403,
-                                        404,
-                                        407
-                                    };
+                                {
+                                    2,
+                                    3,
+                                    4,
+                                    5,
+                                    6,
+                                    7,
+                                    8,
+                                    9,
+                                    10,
+                                    11,
+                                    12,
+                                    13,
+                                    101,
+                                    102,
+                                    103,
+                                    104,
+                                    105,
+                                    106,
+                                    107,
+                                    108,
+                                    109,
+                                    110,
+                                    111,
+                                    112,
+                                    401,
+                                    402,
+                                    403,
+                                    404,
+                                    407
+                                };
                                 if (power < 0)
                                 {
-                                    powerList.Add(Mathf.Abs(power));//武器杀
+                                    powerList.Add(power.Abs());//武器杀
                                 }
-                                int material = int.Parse(presetItem[506]);
-                                if (material != 0)
+                                int material = presetItem[506].ParseInt();
+                                if (material != 0) // 没有布杀
                                 {
                                     powerList.Add(209 + material);//材质杀
                                 }
-                                power = powerList[seed.Next(0, powerList.Count)];
+                                power = powerList.Random();
                             }
-                            else power = Main.settings.WeaponPower3 == 4 ? 407 : 401 + Main.settings.WeaponPower3;
+                            else power = Main.settings.WeaponPower[3] == 4 ? 407 : 401 + Main.settings.WeaponPower[3];
                         }
+                        //杀
+                        else if (Main.settings.WeaponPower[0] == 2)
+                        {
+                            if (Main.settings.WeaponPower[2] == 1)//材质杀
+                            {
+                                int material = presetItem[506].ParseInt();
+                                power = material == 0 ? 0 :209 + material; //没有布杀
+                            }
+                            else power = power.Abs();//武器杀
+                        }
+                        // 破 辟
                         else
                         {
-                            if (Main.settings.WeaponPower0 == 2)//杀
-                            {
-                                if (Main.settings.WeaponPower2 == 1)//材质杀
-                                {
-                                    int material = int.Parse(presetItem[506]);
-                                    if (material == 0)//没有布杀
-                                    {
-                                        goto ret;
-                                    }
-                                    else power = 209 + material;
-                                }
-                                else power = Mathf.Abs(power);//武器杀
-                            }
-                            else power = (Main.settings.WeaponPower0 == 0 ? 2 : 101) + Main.settings.WeaponPower1;
+                            power = (Main.settings.WeaponPower[0] == 0 ? 2 : 101) + Main.settings.WeaponPower[1];
                         }
-                        ChangeNewItemSPower(newItem, presetItemId, power);
+                        if (power > 0) ChangeNewItemSPower(newItem, presetItemId, power);
                     }
-                    goto ret;
                 }
                 //防具
-                if (equipTyp == 2)
+                else if (equipTyp == 2)
                 {
                     //耐久
                     if (!isFixed)
@@ -671,14 +669,12 @@ namespace MakeYourWant
                     }
                     newItem[902] = duration.ToString();//最大耐久
                     newItem[901] = duration.ToString();//当前耐久
-                    if (Main.settings.ArmorAttrMustBe || seed.Next(0, 100) < buffObbs)
+                    if (Main.settings.ArmorAttr != 0 || seed.Next(0, 100) < buffObbs)
                     {
                         int attrTyp = (Main.settings.ArmorAttr == 0) ? seed.Next(0, 6) : (Main.settings.ArmorAttr - 1);
-                        newItem[51361 + attrTyp] =
-                            (Mathf.Max(int.Parse(presetItem[8]) / 2, 1) * ((buffObbs != 999) ? 5 : 10)).ToString();
+                        newItem[51361 + attrTyp] = (Mathf.Max(int.Parse(presetItem[8]) / 2, 1) * ((buffObbs != 999) ? 5 : 10)).ToString();
                     }
-                    if (Main.settings.ArmorPower != 1 &&
-                        (Main.settings.ArmorPowerMustBe || seed.Next(0, 100) < sBuffObbs))
+                    if (Main.settings.ArmorPower != 1 && (Main.settings.ArmorPower != 0 || seed.Next(0, 100) < sBuffObbs))
                     {
                         int power;
                         if (Main.settings.ArmorPower == 0)
@@ -691,19 +687,17 @@ namespace MakeYourWant
                                 406,
                                 407
                             };
-                            power = list2[seed.Next(0, list2.Count)];
+                            power = list2.Random();
                         }
                         else
                         {
-                            power = (Main.settings.ArmorPower <= 3) ?
-                                (Main.settings.ArmorPower + 399) : (Main.settings.ArmorPower + 401);
+                            power = Main.settings.ArmorPower <= 3 ? Main.settings.ArmorPower + 399 : Main.settings.ArmorPower + 401;
                         }
                         ChangeNewItemSPower(newItem, presetItemId, power);
                     }
-                    goto ret;
                 }
                 //饰品
-                if (equipTyp == 3)
+                else
                 {
                     //耐久
                     if (!isFixed)
@@ -713,28 +707,23 @@ namespace MakeYourWant
                     }
                     newItem[902] = duration.ToString();//最大耐久
                     newItem[901] = duration.ToString();//当前耐久
-                    if (Main.settings.JewelryAttrMustBe || seed.Next(0, 100) < buffObbs)
+                    if (Main.settings.JewelryAttr[0] != 0 || seed.Next(0, 100) < buffObbs)
                     {
-                        int attrTyp;
-                        if (Main.settings.JewelryAttr0 == 0) attrTyp = (seed.Next(0, 100) < 50) ?
-                                seed.Next(0, 16) + 50501 : seed.Next(0, 14) + 50601;
-                        else
-                        {
-                            if (Main.settings.JewelryAttr0 == 1) attrTyp = Main.settings.JewelryAttr1 + 50501;
-                            else attrTyp = Main.settings.JewelryAttr2 + 50601;
-                        }
-                        newItem[attrTyp] =
-                            (Mathf.Max(int.Parse(presetItem[8]) / 2, 1) * ((buffObbs != 999) ? 5 : 10)).ToString();
+                        int attrTyp = Main.settings.JewelryAttr[0] == 0
+                            ? seed.Next(0, 100) < 50
+                                ? seed.Next(0, 16) + 50501
+                                : seed.Next(0, 14) + 50601
+                            : Main.settings.JewelryAttr[0] == 1
+                                ? Main.settings.JewelryAttr[1] + 50501
+                                : Main.settings.JewelryAttr[2] + 50601;
+                        newItem[attrTyp] = (Mathf.Max(presetItem[8].ParseInt() / 2, 1) * ((buffObbs != 999) ? 5 : 10)).ToString();
                     }
                     if (Main.settings.JewelryPowerMustBe || seed.Next(0, 100) < sBuffObbs)
                     {
                         ChangeNewItemSPower(newItem, presetItemId, 407);
                     }
-                    goto ret;
                 }
             }
-            throw new Exception($"【装备定制】意外的物品:{presetItem[0]}, id={presetItemId}");
-            ret:;
             GameData.Items.AddItem(newItemId, newItem);
             __result = newItemId;
             return false;
