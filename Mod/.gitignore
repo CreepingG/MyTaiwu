@@ -338,3 +338,4 @@ Properties
 *.sln
 build
 *.zip
+/废弃mod
