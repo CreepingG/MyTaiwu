@@ -18,6 +18,7 @@ namespace FightBoss
         {
             UnityModManager.ModSettings.Save<Settings>(this, modEntry);
         }
+        public bool keepLevel = true;
     }
 
     public static class Main
@@ -35,7 +36,6 @@ namespace FightBoss
             modEntry.OnToggle = OnToggle;
             modEntry.OnGUI = OnGUI;
             modEntry.OnSaveGUI = OnSaveGUI;
-            
             return true;
         }
 
@@ -57,7 +57,7 @@ namespace FightBoss
             bool flag;
             int tmp;
             GUILayout.BeginHorizontal();
-            GUILayout.Label("ID(2001-2009)：");
+            GUILayout.Label("ID(2001-2009)：", GUILayout.Width(100));
             if (int.TryParse(GUILayout.TextField(PresetActorId.ToString()), out tmp))
             {
                 PresetActorId = tmp;
@@ -68,15 +68,20 @@ namespace FightBoss
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Label("游戏难度(0-3)：");
-            if (int.TryParse(GUILayout.TextField(DateFile.instance.enemyBorn.ToString()), out tmp))
-                if (tmp >= 0 && tmp <= 3)
-                    DateFile.instance.enemyBorn = tmp;
-            GUILayout.EndHorizontal();
+            GUILayout.Label("游戏难度(0-3)：", GUILayout.Width(100));
+            if (int.TryParse(GUILayout.TextField(DateFile.instance.enemyBorn.ToString(), GUILayout.Width(150)), out tmp)
+                && tmp >= 0 && tmp <= 3)
+                DateFile.instance.enemyBorn = tmp;
+            
+            GUILayout.FlexibleSpace();
 
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("世界进度(0-36)：");
-            if (int.TryParse(GUILayout.TextField(XXLevel.ToString()), out tmp)) XXLevel = tmp;
+            GUILayout.Label("世界进度(0-36)：", GUILayout.Width(100));
+            if (int.TryParse(GUILayout.TextField(XXLevel.ToString(), GUILayout.Width(150)), out tmp))
+                XXLevel = tmp;
+
+            GUILayout.FlexibleSpace();
+
+            settings.keepLevel = GUILayout.Toggle(settings.keepLevel, "保持世界进度", GUILayout.Width(150));
             GUILayout.EndHorizontal();
         }
         static void OnSaveGUI(UnityModManager.ModEntry modEntry)
@@ -87,6 +92,7 @@ namespace FightBoss
         public static int XXLevel = -1;
         public static int PresetActorId = 2009;
         public static int Difficulty = -1;
+        public static Dictionary<int, int[]> xxPointValue;
 
         public static void CallBattle()
         {
@@ -94,9 +100,21 @@ namespace FightBoss
                 9001 + DateFile.instance.GetWorldXXLevel(), // teamId
                 0, // typ 死斗
                 18, // mapTyp 背景
-                new List<int> { PresetActorId } // mianEIds
+                new List<int> { PresetActorId } // mianEnemyIds
             );
-            //StartBattle.instance.ShowStartBattleWindow(9001 + DateFile.instance.GetWorldXXLevel(), 0, 18, new List<int> { PresetActorId });
+            // 创建副本
+            if (settings.keepLevel)
+            {
+                xxPointValue = new Dictionary<int, int[]>();
+                foreach (var kvp in DateFile.instance.xxPointValue)
+                {
+                    xxPointValue[kvp.Key] = new int[3];
+                    for (int i = 0; i < 3; i++)
+                    {
+                        xxPointValue[kvp.Key][i] = kvp.Value[i];
+                    }
+                }
+            }
         }
 
         public static void EndBattle()
@@ -126,6 +144,19 @@ namespace FightBoss
         {
             Main.XXLevel = DateFile.instance.GetWorldXXLevel(true);
             //Main.Difficulty = DateFile.instance.enemyBorn;
+        }
+    }
+
+    [HarmonyPatch(typeof(BattleEndWindow), "BattleEnd")]//战斗结束
+    public static class FightBoss_BattleEnd_Patch
+    {
+        static void Postfix()
+        {
+            if (Main.xxPointValue != null && Main.settings.keepLevel)
+            {
+                DateFile.instance.xxPointValue = Main.xxPointValue;
+            }
+            Main.xxPointValue = null;
         }
     }
 

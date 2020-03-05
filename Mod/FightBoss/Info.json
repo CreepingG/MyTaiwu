@@ -2,7 +2,7 @@
   "Id": "FightBoss",
   "DisplayName": "挑战剑冢",
   "Author": "东风有意",
-  "Version": "1.1.0",
+  "Version": "1.1.1",
   "AssemblyName": "FightBoss.dll",
   "EntryMethod": "FightBoss.Main.Load"
 }
