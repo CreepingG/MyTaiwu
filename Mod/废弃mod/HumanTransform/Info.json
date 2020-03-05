@@ -1,8 +1,0 @@
-﻿{
-  "Id": "HumanTransform",
-  "DisplayName": "人体改造",
-  "Author": "东风有意",
-  "Version": "1.0.0",
-  "AssemblyName": "HumanTransform.dll",
-  "EntryMethod": "HumanTransform.Main.Load"
-}

@@ -1,8 +1,0 @@
-﻿{
-  "Id": "PokeTaiwu",
-  "DisplayName": "口袋太吾",
-  "Author": "东风有意",
-  "Version": "1.0.0",
-  "AssemblyName": "PokeTaiwu.dll",
-  "EntryMethod": "PokeTaiwu.Main.Load"
-}

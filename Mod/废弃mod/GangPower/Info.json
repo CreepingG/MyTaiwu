@@ -1,8 +1,0 @@
-﻿{
-  "Id": "GangPower",
-  "DisplayName": "门派特效",
-  "Author": "东风有意",
-  "Version": "1.0.0",
-  "AssemblyName": "GangPower.dll",
-  "EntryMethod": "GangPower.Main.Load"
-}

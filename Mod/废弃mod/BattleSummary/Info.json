@@ -1,8 +1,0 @@
-﻿{
-  "Id": "BattleSummary",
-  "DisplayName": "战后总结",
-  "Author": "东风有意",
-  "Version": "1.0.0",
-  "AssemblyName": "BattleSummary.dll",
-  "EntryMethod": "BattleSummary.Main.Load"
-}
