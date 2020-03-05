@@ -806,8 +806,6 @@ namespace WikiDate
         {
             equipId = int.Parse(GameData.Items.GetItemProperty(equipId, 999));
             string str = "";
-            int num = 0;
-            bool isActor = true;
             str += $"{WindowManage.instance.Dit()}{DateFile.instance.massageDate[151][2].Split('|')[0]}{DateFile.instance.SetColoer(20003, DateFile.instance.massageDate[151][2].Split('|')[int.Parse(DateFile.instance.GetItemDate(equipId, 507))])}\n";
             string text = "";
             string[] array = DateFile.instance.GetItemDate(equipId, 7).Split('|');
@@ -832,8 +830,6 @@ namespace WikiDate
         {
             var presetItem = DateFile.instance.presetitemDate[int.Parse(GameData.Items.GetItemProperty(equipId, 999))];
             string str = "";
-            int actorIsInBattle = 0;
-            bool isActor = true;
             str += $"{Util.Dit()}{DateFile.instance.massageDate[151][2].Split('|')[0]}{Util.Color(20003, DateFile.instance.massageDate[151][2].Split('|')[presetItem[507].ToInt()])}\n";
             string[] array = DateFile.instance.massageDate[8007][1].Split('|');
             HashSet<int> 命中类型 = new HashSet<int>();
