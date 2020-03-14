@@ -21,10 +21,23 @@ namespace TaiwuDate
         JObject[] All;
         string SourcePath;
         int Length = 0;
+        string ConfigFile = "path.txt";
+        bool Inited = false;
 
         public RootForm()//初始化
         {
             InitializeComponent();
+            if (System.IO.File.Exists(ConfigFile))
+            {
+                StreamReader sr = new StreamReader(ConfigFile, Encoding.Default);
+                var s = sr.ReadLine();
+                if (!string.IsNullOrEmpty(s))
+                {
+                    OutputPath.Text = s;
+                }
+                sr.Dispose();
+            }
+            Inited = true;
         }
         
         string ItemName(JObject jo)
@@ -210,26 +223,29 @@ namespace TaiwuDate
             OutputBtn.Enabled = true;
         }
 
-        bool SaveToFile(string fileName, string massage)
+        bool SaveToFile(string fileName, string massage, bool usePath = true)
         {
-            var path = OutputPath.Text;
-            try
+            if (usePath)
             {
-                if (!System.IO.Directory.Exists(path))//创建目录
-                    System.IO.Directory.CreateDirectory(path);
-            }
-            catch(Exception e)
-            {
-                MessageBox.Show(e.Message, "异常", MessageBoxButtons.OK);
-                return false;
-            }
+                var path = OutputPath.Text;
+                try
+                {
+                    if (!System.IO.Directory.Exists(path))//创建目录
+                        System.IO.Directory.CreateDirectory(path);
+                }
+                catch (Exception e)
+                {
+                    MessageBox.Show(e.Message, "异常", MessageBoxButtons.OK);
+                    return false;
+                }
 
-            if (!path.EndsWith("\\")) path += "\\";
-            fileName = path + fileName;
+                if (!path.EndsWith("\\")) path += "\\";
+                fileName = path + fileName;
+            }
             FileStream file = new FileStream(fileName, FileMode.Create); //输出到exe所在目录
             if (file != null)
             {
-                byte[] data = System.Text.Encoding.Default.GetBytes(massage);
+                byte[] data = Encoding.Default.GetBytes(massage);
                 file.Write(data, 0, data.Length);
                 file.Flush();
                 file.Close();
@@ -244,6 +260,12 @@ namespace TaiwuDate
             {
                 OutputPath.Text = folderBrowserDialog1.SelectedPath;
             }
+        }
+
+        private void OutputPath_TextChanged(object sender, EventArgs e)
+        {
+            if (!Inited) return;
+            SaveToFile(ConfigFile, OutputPath.Text, false);
         }
     }
 

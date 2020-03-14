@@ -89,7 +89,8 @@
             this.OutputPath.Name = "OutputPath";
             this.OutputPath.Size = new System.Drawing.Size(100, 72);
             this.OutputPath.TabIndex = 8;
-            this.OutputPath.Text = "D:\\3D objects\\太吾绘卷\\wiki\\上传\\Json";
+            this.OutputPath.Text = "D:\\太吾绘卷\\wiki\\上传\\Json";
+            this.OutputPath.TextChanged += new System.EventHandler(this.OutputPath_TextChanged);
             // 
             // folderBrowserDialog1
             // 
