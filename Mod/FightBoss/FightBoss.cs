@@ -19,6 +19,7 @@ namespace FightBoss
             UnityModManager.ModSettings.Save<Settings>(this, modEntry);
         }
         public bool keepLevel = true;
+        public bool poison = false;
     }
 
     public static class Main
@@ -82,6 +83,7 @@ namespace FightBoss
             GUILayout.FlexibleSpace();
 
             settings.keepLevel = GUILayout.Toggle(settings.keepLevel, "保持世界进度", GUILayout.Width(150));
+            settings.poison = GUILayout.Toggle(settings.poison, "带毒", GUILayout.Width(150));
             GUILayout.EndHorizontal();
         }
         static void OnSaveGUI(UnityModManager.ModEntry modEntry)
@@ -120,6 +122,34 @@ namespace FightBoss
         public static void EndBattle()
         {
             BattleEndWindow.instance.BattleEnd(false, 1);
+        }
+    }
+    
+    [HarmonyPatch(typeof(DateFile), "MakeXXEnemy")]//捕获相枢化身
+    public static class FightBoss_MakeXXEnemy_Patch
+    {
+        static void Postfix(int baseActorId, int __result)
+        {
+            if (!Main.enabled) return;
+            SetPoison(__result, baseActorId);
+        }
+        static void SetPoison(int enemyId, int baseId)
+        {
+            // 根据相枢化身内力属性的毒抗 生成毒素随机池
+            var qiTyp = DateFile.instance.qiValueStateDate[DateFile.instance.GetActorQiTyp(enemyId)];
+            var values = Enumerable.Range(8, 6).Select(i => qiTyp[i].ParseInt()).AsEnumerable();
+            var poisonTyps = values.SelectMany((v, i) => Enumerable.Repeat(i + 71, v)).ToArray(); 
+            foreach(var i in new int[] { 1, 2, 3, 4, 6, 7 }) //兵器&护具
+            {
+                var equipPosition = i + 300;
+                var equipId = DateFile.instance.GetActorDate(enemyId, equipPosition, false).ParseInt();
+                var poisonLevel = Mathf.Clamp(DateFile.instance.GetWorldXXLevel(), 1, 9).ToString();
+                var poisonTyp = poisonTyps.Random();
+                var poisonValue = DateFile.instance.presetitemDate.Select(kvp => kvp.Value)
+                    .First(item => item[5] == "30" && item[8] == poisonLevel && item[poisonTyp] != "0") // 毒药 同品级 指定毒素
+                    [poisonTyp];
+                GameData.Items.SetItemProperty(equipId, poisonTyp, poisonValue);
+            }
         }
     }
 
