@@ -631,10 +631,7 @@ namespace WikiDate
                 allData.Add(name + "内力", allQi[i]);
             }//内力
             var qiTyp = DateFile.instance.qiValueStateDate[DateFile.instance.GetActorQiTyp(this.actorId)];
-            var qiTypName = qiTyp[0].Split(new string[] { "·" }, StringSplitOptions.None)[0];
-            qiTypName = DateFile.instance.SetColoer(int.Parse(qiTyp[98]), qiTypName);
-            allData.Add("内力属性", ReformatColor(qiTypName));
-            allData.Add("内力属性说明", ReformatColor(qiTyp[99]));
+            allData.Add("内力属性", ReformatColor(qiTyp[0]));
             for (int i = 0; i < 6; i++)
             {
                 string name = DateFile.instance.poisonDate[i][0];
