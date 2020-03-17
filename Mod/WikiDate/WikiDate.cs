@@ -653,6 +653,7 @@ namespace WikiDate
                 }
                 allData.Add("疗伤次数", enemyDoHealSize);
                 allData.Add("驱毒次数", enemyDoRemovePoisonSize);
+                allData.Add("最大守御", BattleVaule.instance.GetMaxDp(false, actorId));
             }
         }
         public void FeatureInfo()
