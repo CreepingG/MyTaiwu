@@ -95,9 +95,9 @@ namespace WindTest
             settings.ignoreEvents = GUILayout.Toggle(settings.ignoreEvents, "无视时节开始的乞讨事件");
             settings.ignoreCreepings = GUILayout.Toggle(settings.ignoreCreepings, "自动驱逐外道（不打断移动）");
             GUILayout.EndHorizontal();
-            GUILayout.BeginHorizontal();
+            /*GUILayout.BeginHorizontal();
             settings.input = GUILayout.TextField(settings.input);
-            GUILayout.EndHorizontal();
+            GUILayout.EndHorizontal();*/
 
             if (DateFile.instance != null && DateFile.instance.mianActorId > 0)
             {
