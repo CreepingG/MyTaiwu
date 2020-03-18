@@ -337,9 +337,10 @@ namespace WikiDate
                 var skip = false;// cnt <= 2640;
                 if (!skip)
                 {
-                    var info = One(kvp.Key);
+                    var id = kvp.Key;
+                    var info = One(id);
                     if (info == null) continue;
-                    SaveToFile($"物品_1_{info[0]}.wiki", info[1], "物品");
+                    SaveToFile($"物品文本_1_{id}.json", info, "物品");
                 }
                 cnt++;
                 Main.ActorName = $"{cnt}/{sum}";
@@ -349,7 +350,7 @@ namespace WikiDate
                 }
             }
         }
-        public string[] One(int presetItemId)
+        public string One(int presetItemId)
         {
             Main.ReadingItem = true;
             var presetItem = DateFile.instance.presetitemDate[presetItemId];
@@ -364,9 +365,10 @@ namespace WikiDate
             itemDate[902] = duration;
             itemDate[901] = duration;
 
-            var result = new Dictionary<string, string>();
-            result["id"] = presetItemId.ToString();
-            result["name"] = DateFile.instance.GetItemDate(itemId, 0);
+            var result = new Dictionary<string, string>
+            {
+                ["id"] = presetItemId.ToString()
+            };
             //上框
             bool isWeapon = int.Parse(DateFile.instance.GetItemDate(itemId, 1)) == 1;
             if (isWeapon)
@@ -384,42 +386,10 @@ namespace WikiDate
                 var need = ShowWeaponUseNeed(itemId);
                 result["need"] = need.Replace(">20%<", ">-<");
             }
-            //页面名称
-            string pageName = presetItem[0];
-            if (pageName == "血露")
-            {
-                int grade = int.Parse(presetItem[8]);
-                string gradeText = DateFile.instance.massageDate[8001][2].Split('|')[grade - 1].Split(new string[] { "·" }, StringSplitOptions.RemoveEmptyEntries)[1];
-                pageName += $"({gradeText})";
-            }
-            else if (presetItem[4] == "5") //图书
-            {
-                pageName = Boss.NoNewLine(pageName).Replace("《", "").Replace("》", "");
-                if (presetItemId == 5005) //义父的天枢玄机
-                {
-                    pageName += "(剧情)";
-                }
-                else if (presetItem[31] == "17")
-                {
-                    pageName += presetItem[35] == "1" ? "(手抄)" : "(真传)";
-                }
-            }
-            else if (presetItem[5] == "36")//神兵
-            {
-                var arr = pageName.Split('\n');
-                pageName = arr.Last();
-            }else if (presetItem[0] == "白鹿角")
-            {
-                pageName += $"({(presetItemId == 60505 ? "对刺" : "武林大会")})";
-            }
-            string text = @"{{#invoke:Item|main";
-            foreach (var kvp in result)
-            {
-                text += $"\n|{kvp.Key}={Boss.ReformatColor(kvp.Value).Replace("\n", "<br/>\n")}";
-            }
-            text += "}}";
+            result = result.Select(kvp => new string[] { kvp.Key, Boss.ReformatColor(kvp.Value).Replace("\n", "<br/>\n") }).ToDictionary(pair => pair[0], pair => pair[1]);
+            string text = JsonConvert.SerializeObject(result);
             Main.ReadingItem = false;
-            return new string[] { pageName, text };
+            return text;
         }
 
         MethodInfo showItemMassage = typeof(WindowManage).GetMethod("ShowItemMassage", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -650,8 +620,13 @@ namespace WikiDate
                 }
                 allData.Add("疗伤次数", enemyDoHealSize);
                 allData.Add("驱毒次数", enemyDoRemovePoisonSize);
-                allData.Add("最大守御", BattleVaule.instance.GetMaxDp(false, actorId));
+                allData.Add("最大守御", GetMaxDp(actorId));
             }
+        }
+        int GetMaxDp(int enemyId)
+        {
+            int num = 30 + (BattleVaule.instance.GetDeferDefuse(false, enemyId, false, 0, 0) + BattleVaule.instance.GetDeferDefuse(false, enemyId, false, 1, 0)) / 2;
+            return Mathf.Clamp(num * Mathf.Max(0, int.Parse(DateFile.instance.GetActorDate(enemyId, 22))) / 100, 0, 5000);
         }
         public void FeatureInfo()
         {
