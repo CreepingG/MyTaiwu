@@ -545,7 +545,7 @@ namespace WikiDate
                 string value = DateFile.instance.GetActorDate(this.actorId, key);
                 if (value != "" && value != "0") allData.Add(key, value);
             }
-            allData.Add("内功发挥", int.Parse(DateFile.instance.GetActorDate(this.actorId, 1105)) + 100);
+            allData.Add("内功发挥", int.Parse(DateFile.instance.GetActorDate(this.actorId, 1105)));
             for (int i = 0; i < 6; i++)
             {
                 string name = DateFile.instance.massageDate[1002][1].Split('|')[1 + i];
@@ -750,7 +750,7 @@ namespace WikiDate
     {
         static void Postfix(int baseActorId, int __result)
         {
-            new Boss(__result, baseActorId);
+            if(Main.enabled) new Boss(__result, baseActorId);
         }
     }
 
