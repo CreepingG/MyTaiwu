@@ -1,0 +1,8 @@
+﻿{
+  "Id": "FuZhou",
+  "DisplayName": "符解神通",
+  "Author": "东风有意",
+  "Version": "1.0.0",
+  "AssemblyName": "FuZhou.dll",
+  "EntryMethod": "FuZhou.Main.Load"
+}
