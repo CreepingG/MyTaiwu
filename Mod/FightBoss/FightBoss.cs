@@ -131,7 +131,7 @@ namespace FightBoss
         static void Postfix(int baseActorId, int __result)
         {
             if (!Main.enabled) return;
-            SetPoison(__result, baseActorId);
+            if (Main.settings.poison) SetPoison(__result, baseActorId);
         }
         static void SetPoison(int enemyId, int baseId)
         {
@@ -143,6 +143,7 @@ namespace FightBoss
             {
                 var equipPosition = i + 300;
                 var equipId = DateFile.instance.GetActorDate(enemyId, equipPosition, false).ParseInt();
+                if (equipId <= 0) continue;
                 var poisonLevel = Mathf.Clamp(DateFile.instance.GetWorldXXLevel(), 1, 9).ToString();
                 var poisonTyp = poisonTyps.Random();
                 var poisonValue = DateFile.instance.presetitemDate.Select(kvp => kvp.Value)
