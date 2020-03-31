@@ -18,7 +18,7 @@ namespace wiki
         static void Main(string[] args)
         {
             var wiki = new Wiki();
-            var pageList = wiki.GetList("产业");
+            var pageList = wiki.GetCategoryMembers("功法");
             stack = new ConcurrentStack<Page>();
             foreach (Page page in pageList) stack.Push(page);
             cnt = 0;
@@ -48,10 +48,8 @@ namespace wiki
                 {
                     page.Load();
                     Console.WriteLine($"{Thread.CurrentThread.Name}: 执行第{thisCnt}个页面 -- {page.title}");
-                    var match = pattern.Match(page.text).Groups[1].Value;
-                    var newValue = "{{产业" + (match.Length > 0 ? "|" + match : "") + "}}";
-                    Console.WriteLine(newValue);
-                    page.text = newValue;
+                    page.text = page.text.Replace("{{功法", "{{功法页面");
+                    Console.WriteLine(page);
                     page.Save();
                 }
                 catch (Exception e)
@@ -78,7 +76,7 @@ namespace wiki
                 if (pageName != null) GotoPage(pageName);
                 return page;
             }
-            public PageList GetList(string category)
+            public PageList GetCategoryMembers(string category)
             {
                 pl = new PageList(site);
                 pl.FillFromCategoryTree(category);
