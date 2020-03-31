@@ -94,6 +94,7 @@ namespace WindTest
             settings.maxWeight = GUILayout.Toggle(settings.maxWeight, "最大负重");
             settings.ignoreEvents = GUILayout.Toggle(settings.ignoreEvents, "无视时节开始的乞讨事件");
             settings.ignoreCreepings = GUILayout.Toggle(settings.ignoreCreepings, "自动驱逐外道（不打断移动）");
+            if (GUILayout.Button("弃婴")) TestAction.TraceChildren();
             GUILayout.EndHorizontal();
             /*GUILayout.BeginHorizontal();
             settings.input = GUILayout.TextField(settings.input);
@@ -523,6 +524,30 @@ namespace WindTest
                 Main.Logger.Log($"戒心：{prevWariness}→{curWariness}");
             }
         }
+
+        public static void TraceChildren()
+        {
+            var charId = Actor.Instance.ID;
+            for (var i = 0; i < 1000; i++)
+            {
+                var list = DateFile.instance.MakeNewChildren(charId, charId, true, true, 0, 0, 0, null);
+                if (list.Count==1) continue;
+                var info = list
+                    .Select(child => DateFile.instance.GetActorName(child) + ':' + GetGenderText(child) + ':' + GetGangName(child))
+                    .Aggregate((a, b) => a + ' ' + b);
+                Main.Logger.Log(info);
+            }
+        }
+        static string GetGangName(int charId)
+        {
+            var gangId = DateFile.instance.GetActorDate(charId, 19, false).ParseInt();
+            return DateFile.instance.presetGangDate[gangId][0];
+        }
+        static string GetGenderText(int charId)
+        {
+            var v = DateFile.instance.GetActorDate(charId, 14).ParseInt();
+            return v == 1 ? "男" : "女";
+        }
     }
 
     public static class Util
@@ -838,6 +863,5 @@ namespace WindTest
             }
 
         }
-
     }
 }
