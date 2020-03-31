@@ -1,7 +1,8 @@
 local Linq = {__isLinq = true}
 
-local END = {} --ÓÃÓÚiterµÄ·µ»ØÖµ£¬±êÖ¾µü´ú½áÊø
-local Heap = require('Heap') --ÓÃÓÚTakeByOrderÖĞ´æ·Å²¢±È½Ï×îÖµ
+local END = {} --ç”¨äºiterçš„è¿”å›å€¼ï¼Œæ ‡å¿—è¿­ä»£ç»“æŸ
+local Heap = require('Heap') --ç”¨äºTakeByOrderä¸­å­˜æ”¾å¹¶æ¯”è¾ƒæœ€å€¼
+local unpack = unpack or table.unpack --å…¼å®¹luaæ–°æ—§ç‰ˆæœ¬
 
 setmetatable(Linq, {
 	__call = function(self, ...)
@@ -43,17 +44,39 @@ end
 
 local function Compare(a, b) return a < b end
 
+local function Pairs(source)
+	local f,t,k = pairs(source)
+	return function()
+		local v
+		k,v = f(t,k)
+		if v==nil then return END end
+		return v
+	end
+end
+
 function Linq:New(...)
     local source = {...}
-    local asArr = false
+    local asArray = true
     if type(source[1])=='table' and type(source[2])~='table' then
-        source, asArr = unpack(source)
-    end
-    if type(source)~='table' then
-        error('expect table, get '..type(source))
+    	local flag
+        source, flag = unpack(source)
+        if flag==nil then
+        	asArray = nil
+        elseif type(flag)=='string' then
+        	flag = flag:sub(1,1)
+	        if flag=='d' or flag=='m' then
+	        	asArray = false
+	        elseif flag=='a' or flag=='l' then
+	        	asArray = true
+	        elseif flag=='i' or flag=='p' then
+	        	return MakeLinq{iter = function() return Pairs(source) end}
+	        end
+	    else
+	       asArray = flag
+	    end
     end
     if source.__isLinq then return source end
-    if not asArr and not IsArray(source) then
+    if asArray==false or (asArray==nil and not IsArray(source)) then
         source = Dict2Arr(source)
     end
     return MakeLinq(source)
@@ -61,14 +84,14 @@ end
 
 function Linq:Iter()
 	local iters = {}
-	local i = 0 --×Üµü´ú¼ÆÊı
-	local index = 1 --itersÄ¿Â¼
+	local i = 0 --æ€»è¿­ä»£è®¡æ•°
+	local index = 1 --itersç›®å½•
 	if self.iter then
-		table.insert(iters, self.iter()) --µü´úÒÔº¯ÊıĞÎÊ½´«µİµÄÊı¾İ
+		table.insert(iters, self.iter()) --è¿­ä»£ä»¥å‡½æ•°å½¢å¼ä¼ é€’çš„æ•°æ®
 	end
 
-    local j,k = 1,0 --Ò»¼¶Ä¿Â¼£¬¶ş¼¶Ä¿Â¼
-    local function rawIter() --µü´úÒÔÊı×éĞÎÊ½´æ·ÅµÄÊı¾İ
+    local j,k = 1,0 --ä¸€çº§ç›®å½•ï¼ŒäºŒçº§ç›®å½•
+    local function rawIter() --è¿­ä»£ä»¥æ•°ç»„å½¢å¼å­˜æ”¾çš„æ•°æ®
         k = k + 1
         while self[j] do
         	local v = self[j][k]
@@ -120,7 +143,7 @@ Linq.ToArray = Linq.Done
 
 -- args: [from, ]to
 function Linq:Range(...)
-	local args = (type(self)=='table' and self.__isLinq) and {...} or {self, ...} --ÒÔ:·½Ê½µ÷ÓÃ »ò ÒÔ.·½Ê½µ÷ÓÃ
+	local args = (type(self)=='table' and self.__isLinq) and {...} or {self, ...} --ä»¥:æ–¹å¼è°ƒç”¨ æˆ– ä»¥.æ–¹å¼è°ƒç”¨
     local from, to
     if #args==1 then
         from, to = 1, args[1]
@@ -135,8 +158,9 @@ function Linq:Range(...)
 end
 
 -- generator: function([index]) or value
+-- cnt
 function Linq:Repeat(...)
-	local args = (type(self)=='table' and self.__isLinq) and {...} or {self, ...} --ÒÔ:·½Ê½µ÷ÓÃ »ò ÒÔ.·½Ê½µ÷ÓÃ
+	local args = (type(self)=='table' and self.__isLinq) and {...} or {self, ...} --ä»¥:æ–¹å¼è°ƒç”¨ æˆ– ä»¥.æ–¹å¼è°ƒç”¨
 	local generator, cnt = unpack(args)
     if type(generator)~='function' then
         local value = generator
@@ -173,17 +197,16 @@ function Linq:SelectMany(selector)
     local parent = self
     local childIter = function(this)
     	local parentIter = parent:Iter()
-	    local curList = {}
-	    local curIndex = 0
+	    local curIter = function() return end
     	return function()
-	    	curIndex = curIndex + 1
-    		while curList[curIndex]==nil do
+	    	local ii,vv = curIter()
+    		while ii==nil do
 	    		local i, v = parentIter()
 	    		if i==nil then return END end
-	    		curList = selector(v, i)
-	    		curIndex = 1
+	    		curIter = Linq(selector(v, i)):Iter()
+	    		ii,vv = curIter()
 	    	end
-    		return curList[curIndex]
+    		return vv
     	end
     end
 
@@ -208,7 +231,7 @@ function Linq:Where(predicate)
     return MakeLinq{iter=childIter}
 end
 
--- ·µ»ØÇ°n¸ö·ûºÏÌõ¼şµÄÔªËØ
+-- è¿”å›å‰nä¸ªç¬¦åˆæ¡ä»¶çš„å…ƒç´ 
 -- cnt:number, max size of subsequence
 -- *predicate:func(value[, index]) => want:bool
 function Linq:Take(cnt, predicate)
@@ -231,33 +254,34 @@ function Linq:Take(cnt, predicate)
     return MakeLinq{iter=childIter}
 end
 
--- ÅÅĞò²¢·µ»ØÇ°n¸öÔªËØ£¬»áÉú³ÉĞÂÊı×é
--- Ò»°ãÀ´Ëµ£¬n>50Ê±ºÄÊ±¸ßÓÚÏÈÈ«²¿OrderByÔÙTake£¬µ«ºÃ´¦ÔÚÓÚÕ¼ÓÃÄÚ´æĞ¡
+-- æ’åºå¹¶è¿”å›å‰nä¸ªå…ƒç´ ï¼Œä¼šç”Ÿæˆæ–°æ•°ç»„
 function Linq:TakeByOrder(cnt, selector)
 	selector = selector or function(v) return v end
     local heap = Heap(cnt, function(a, b) return a[2] < b[2] end)
     self:Select(function(t) return {t, selector(t)} end)
         :ForEach(function(v) heap:Push(v) end)
-    return MakeLinq(heap:Done()):Select(function(pair) return pair[1] end)
+    return MakeLinq(heap:Done(), 'list'):Select(function(pair) return pair[1] end)
 end
 
--- ½«ĞòÁĞ¸ù¾İselectorµÄ·µ»ØÖµ·Ö×é£¬key´æÔÚmetatableÖĞ£¬»áÉú³ÉĞÂÊı×é
+-- å°†åºåˆ—æ ¹æ®selectorçš„è¿”å›å€¼åˆ†ç»„ï¼Œkeyå­˜åœ¨metatableä¸­ï¼Œä¼šç”Ÿæˆæ–°æ•°ç»„
 -- return [{1, 2, ..., 'key'}, ...]
 function Linq:GroupBy(selector)
     local indexOf = {}
     local groups = {}
     for i,v in self:Iter() do
         local key = selector(v, i)
-        if indexOf[key] == nil then
-            table.insert(groups, setmetatable({}, {__index = {key = key}}))
-            indexOf[key] = #groups
-        end
-        table.insert(groups[indexOf[key]], v)
+        if key~=nil then --æ˜ å°„ç»“æœä¸ºnilï¼Œåˆ™èˆå»
+	        if indexOf[key] == nil then
+	            table.insert(groups, setmetatable({}, {__index = {key = key}}))
+	            indexOf[key] = #groups
+	        end
+	        table.insert(groups[indexOf[key]], v)
+	    end
     end
     return MakeLinq(groups)
 end
 
--- Á¬½ÓÁ½¸öĞòÁĞ£¨¸Ä±äÔ­ĞòÁĞ£¬²»¸Ä±äÀ´Ô´£©
+-- è¿æ¥ä¸¤ä¸ªåºåˆ—ï¼ˆæ”¹å˜åŸåºåˆ—ï¼Œä¸æ”¹å˜æ¥æºï¼‰
 function Linq:Concat(other)
     if other.__isLinq then
         other = other:Done()
@@ -266,7 +290,7 @@ function Linq:Concat(other)
     return self
 end
 
--- ½«Á½¸öĞòÁĞÓ³ÉäÖÁÒ»¸öĞòÁĞ
+-- å°†ä¸¤ä¸ªåºåˆ—æ˜ å°„è‡³ä¸€ä¸ªåºåˆ—
 -- selector: function(value1, value2, index) => newValue
 function Linq:Zip(other, selector)
     if selector==nil then selector = function(v1, v2) return {v1, v2} end end
@@ -288,7 +312,7 @@ function Linq:Zip(other, selector)
 end
 
 
--- ·µ»ØĞòÁĞÖĞ²»ÖØ¸´µÄÖµ
+-- è¿”å›åºåˆ—ä¸­ä¸é‡å¤çš„å€¼
 function Linq:Distinct(selector)
     if selector==nil then selector = function(v) return v end end
 
@@ -299,10 +323,10 @@ function Linq:Distinct(selector)
     	return function()
     		local i, v = parentIter()
     		while i do
-    			if set[v] then --ÒÑ³öÏÖ¹ı¸ÃÖµ£¬¶ÁÈ¡ÏÂÒ»¸ö
+    			if set[v] then --å·²å‡ºç°è¿‡è¯¥å€¼ï¼Œè¯»å–ä¸‹ä¸€ä¸ª
     				i, v = parentIter()
     			else
-		    		set[v] = 1 --¼ÇÂ¼¸ÃÖµ£¬·µ»Ø
+		    		set[v] = 1 --è®°å½•è¯¥å€¼ï¼Œè¿”å›
 		    		return selector(v, i)
 		    	end
 	    	end
@@ -313,8 +337,8 @@ function Linq:Distinct(selector)
     return MakeLinq{iter=childIter}
 end
 
--- ¸ù¾İÓ³ÉäºóµÄÖµÅÅĞò£¬²»¸Ä±äÔ­ĞòÁĞ£¬»áÉú³ÉĞÂÊı×é
--- cmp:function(a,b) => aÅÅÔÚbÇ°Ãæ
+-- æ ¹æ®æ˜ å°„åçš„å€¼æ’åºï¼Œä¸æ”¹å˜åŸåºåˆ—ï¼Œä¼šç”Ÿæˆæ–°æ•°ç»„
+-- cmp:function(a,b) => aæ’åœ¨bå‰é¢
 function Linq:OrderBy(selector, cmp)
     if cmp==nil then cmp = Compare end
     local kvps = self:Select(function(v,i) return {selector(v,i), v} end):Done()
@@ -322,7 +346,7 @@ function Linq:OrderBy(selector, cmp)
     return Linq(kvps):Select(function(kvp) return kvp[2] end)
 end
 
--- ½«ĞòÁĞÄæĞòÅÅÁĞ£¬»áÉú³ÉĞÂÊı×é
+-- å°†åºåˆ—é€†åºæ’åˆ—ï¼Œä¼šç”Ÿæˆæ–°æ•°ç»„
 function Linq:Reverse()
     local cnt = self:Count()
     local result = {}
@@ -336,8 +360,8 @@ end
 -- Array to One
 ------------------
 
--- Ê¹ÓÃ'+'»ã×ÜĞòÁĞÓ³ÉäºóµÄÖµ
--- *seed: ³õÊ¼Öµ
+-- ä½¿ç”¨'+'æ±‡æ€»åºåˆ—æ˜ å°„åçš„å€¼
+-- *seed: åˆå§‹å€¼
 function Linq:Sum(selector, seed)
     if selector==nil then selector = function(v) return v end end
     for i,v in self:Iter() do
@@ -351,8 +375,8 @@ function Linq:Sum(selector, seed)
     return seed
 end
 
--- Ê¹ÓÃÀÛ¼ÓÆ÷»ã×ÜĞòÁĞµÄÖµ
--- *seed: ³õÊ¼Öµ
+-- ä½¿ç”¨ç´¯åŠ å™¨æ±‡æ€»åºåˆ—çš„å€¼
+-- *seed: åˆå§‹å€¼
 function Linq:Aggregate(accumulator, seed)
     for i,v in self:Iter() do
         if seed==nil then
@@ -471,7 +495,7 @@ function Linq:ForEach(action)
     return self
 end
 
---ÔÚĞòÁĞÄ©Î²¼ÓÈëĞÂÔªËØ
+--åœ¨åºåˆ—æœ«å°¾åŠ å…¥æ–°å…ƒç´ 
 function Linq:Append(value)
     local tail = self[#self]
     if tail and tail.changable then

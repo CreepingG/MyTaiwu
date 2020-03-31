@@ -1,120 +1,38 @@
 local Heap = {cmp = function(a,b) return a < b end}
 
-setmetatable(Heap, {
-	__call = function(self, ...)
-		return Heap:New(...)
-	end
-})
-
-function Heap:New(size, cmp)
-    local this = {age = 0, cnt = 0, size = size, cmp = cmp}
-    setmetatable(this, {__index = Heap})
-    return this
-end
-
 function Heap:Push(elem)
-    local top = self.top
-    if self.cnt < self.size then -- ¶ÑÎ´Âú£¬½«ÐÂÔªËØ¼ÓÈë¶Ñ
-        if top == nil then
-            self.top = {elem}
-        else
-            self:Insert({elem}, top)
-        end
-        self.cnt = self.cnt + 1
-    else -- ¶ÑÒÑÂú£¬±È½ÏÐÂÔªËØÓë¶Ñ¶¥
-        if self.cmp(elem, top[1]) then --ÐÂÔªËØÓÅÏÈ¼¶¸ü¸ß£¬ÐÂÔªËØÈ¡´ú¶Ñ¶¥£¬¸üÐÂ¶ÑÒÔ±£Ö¤¶Ñ¶¥ÎªÓÅÏÈ¼¶×îµÍµÄÔªËØ
-            top[1] = elem
-            self:UpdateValue(top)
-        else --¶Ñ¶¥ÔªËØÓÅÏÈ¼¶¸ü¸ß£¬ÎÞÊÓÐÂÔªËØ
-        end
+    if #self < self.size then -- å †æœªæ»¡ï¼Œå°†æ–°å…ƒç´ åŠ å…¥å †
+        self[#self+1] = elem
+        if #self == self.size then table.sort(self, function(a,b) return not self.cmp(a,b) end) end --å †æ»¡åˆšæ—¶è¿›è¡Œä¸€æ¬¡æŽ’åº
+    elseif self.cmp(elem, self[1]) then --å †å·²æ»¡ï¼Œæ¯”è¾ƒæ–°å…ƒç´ ä¸Žå †é¡¶ã€‚è‹¥æ–°å…ƒç´ æ›´ä¼˜ï¼šæ–°å…ƒç´ æ›¿æ¢å †é¡¶ï¼Œæ›´æ–°å †ä»¥ä¿è¯å †é¡¶ä¸ºæœ€åŠ£å…ƒç´ 
+        self[1] = elem
+        self:Update(1)
     end
-    self.age = self.age + 1
     return self
 end
 
-function Heap:Insert(new, node)
-    if self.cmp(node[1], new[1]) then --
-        new.children = {node}
-        if node.parent == nil then --Ô­½ÚµãÎÞÇ×½Úµã£¬ÐÂ½Úµã³ÉÎªÐÂµÄ¶Ñ¶¥
-            self.top = new
-            node.parent = new
-        else --ÐÂ½ÚµãÈ¡´úÔ­½ÚµãÔÚÇ×½Úµã´¦µÄÎ»ÖÃ
-            local silbings = node.parent.children
-            silbings[(node == silbings[1]) and 1 or 2] = new
-            new.parent, node.parent = node.parent, new
-        end
-        self:UpdateBranch(new)
-    else --ÐÂ½ÚµãµÄÓÅÏÈ¼¶¸ü¸ß£¬ÐÂ½Úµã³ÉÎªÔ­½ÚµãµÄºó´ú
-        if node.children==nil then --Ô­½ÚµãÎÞ×Ó½Úµã
-            node.children = {new}
-            new.parent = node
-        else
-            local children = node.children
-            if #children==1 then --Ô­½ÚµãÓÐ1¸ö×Ó½Úµã£¬ÐÂ½Úµã³ÉÎªÔ­½ÚµãµÄµÚ2¸ö×Ó½Úµã
-                children[2] = new
-                new.parent = node
-            else --Ô­½ÚµãµÄ×Ó½ÚµãÒÑÂú£¬ÐÂ½ÚµãÓëÔ­½ÚµãµÄËæ»ú×Ó½Úµã½øÐÐ±È½Ï
-                self:Insert(new, children[self.age%2+1])
-            end
-        end
-    end
-end
+function Heap:Update(index)
+    local left = index * 2
+    if left > self.size then return end
+    local right = left + 1
+    local childIndex = right <= self.size and self.cmp(self[left], self[right]) and right or left --è¾ƒåŠ£çš„å­å…ƒç´ 
 
-function Heap:UpdateBranch(parent) --¾¡¿ÉÄÜ½«·ÖÖ§µãÏò¶¥²¿ÒÆ¶¯£¬ÌáÉýËÑË÷Ð§ÂÊ
-    local children = parent.children
-    if children==nil or #children==2 then --ÎÞÐè¸üÐÂ
-        return
-    end
-    local child = children[1]
-    local grandChildren = child.children
-    if grandChildren==nil then --Ã»ÓÐ¿É½úÉý½Úµã
-        return
-    end
-    children[2] = grandChildren[#grandChildren]
-    children[2].parent = parent
-    if #grandChildren==1 then
-        child.children = nil
-    else
-        grandChildren[2] = nil
-        self:UpdateBranch(child)
-    end
-end
-
-
-function Heap:UpdateValue(parent)
-    local children = parent.children
-    if children==nil then return end --¶Ñµ×£¬ÎÞÐè±È½Ï
-    local elder = children[1]
-    if children[2]~=nil and self.cmp(elder[1], children[2][1]) then --´æÔÚµÚ¶þ¸ö×Ó½Úµã£¬ÇÒÓÅÏÈ¼¶µÍÓÚµÚÒ»¸ö
-        elder = children[2]
-    end
-    if self.cmp(elder[1], parent[1]) then --×Ó½ÚµãÓÅÏÈ¼¶¾ù¸ßÓÚÇ×½Úµã£¬¸üÐÂÍê³É
-        return
-    else --Ç×½ÚµãÓÅÏÈ¼¶¸ßÓÚ×Ó½Úµã£¬½»»»Öµ£¬½øÐÐÏÂÒ»²½¸üÐÂ
-        elder[1], parent[1] = parent[1], elder[1]
-        self:UpdateValue(elder)
-    end
-end
-
-local function Out(node, list)
-    table.insert(list, node[1])
-    if node.children then
-        for _,child in ipairs(node.children) do
-            Out(child, list)
-        end
+    if self.cmp(self[index], self[childIndex]) then --æ–°å…ƒç´ æ›´ä¼˜ï¼Œäº¤æ¢
+        self[index], self[childIndex] = self[childIndex], self[index]
+        self:Update(childIndex)
     end
 end
 
 function Heap:Done()
-    local result = {}
-    Out(self.top, result)
-    table.sort(result, self.cmp)
-    return result
+    table.sort(self, self.cmp)
+    return self
 end
 
-
-function Heap:Print()
-    mw.logObject(self)
+return function(size, cmp)
+    return setmetatable({
+        size = size,
+        cmp = cmp
+    }, {
+        __index = Heap
+    })
 end
-
-return Heap
