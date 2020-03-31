@@ -20,7 +20,6 @@ namespace TaiwuDate
         Dictionary<string, JObject> ByName;
         JObject[] All;
         string SourcePath;
-        int Length = 0;
         string ConfigFile = "path.txt";
         bool Inited = false;
 
@@ -116,12 +115,14 @@ namespace TaiwuDate
             {
                 JObject jo = new JObject();
                 var line = lines[row].Split(',');
-                var id = int.Parse(line[idCol]);
+                var id = line[idCol].ToInt() ?? int.MinValue;
+                if (id == int.MinValue) continue;
+                var fileName = Path.GetFileName(SourcePath);
                 for (int col = 0; col < line.Length; col++)
                 {
                     var value = line[col];
                     var key = keys[col];
-                    if (SourcePath.Contains("GongFa_Date") && (key.ToInt() ?? 0) / 100 == 2) continue; //功法的[200+]用于记录临时数据
+                    if (fileName.StartsWith("GongFa_Date") && (key.ToInt() ?? 0) / 100 == 2) continue; //功法的[200+]用于记录临时数据
                     if (int.TryParse(value, out var intValue))
                     {
                         if (intValue != 0 || col == 0) jo.Add(key, intValue); //id例外
@@ -135,9 +136,10 @@ namespace TaiwuDate
                         if (value != "Null" && value != "") jo.Add(key, value);
                     }
                 }
-                string name = SourcePath.Contains("Item_Date") ? ItemName(jo) : (string)jo["0"];
-                if (SourcePath.Contains("Item_Date"))
+                string name = (string)jo["0"];
+                if (fileName.StartsWith("Item_Date"))
                 {
+                    name = ItemName(jo);
                     jo.Add("pageName", name);
                 }
                 All[row - 1] = jo;
@@ -150,9 +152,15 @@ namespace TaiwuDate
         void Read(string path)
         {
             SourcePath = path;
-            Lines2JObject(ReadCsvLines(path));
-            Length = All.Length;
-            Print($"共{Length}项\r\n",false);
+            try
+            {
+                Lines2JObject(ReadCsvLines(path));
+            }
+            catch (System.Exception ex)
+            {
+                MessageBox.Show(ex.StackTrace, ex.Message, MessageBoxButtons.OK);
+            }
+            Print($"共{All.Where(jo => jo != null).Count()}项\r\n",false);
             Print(All[0].ToString(), true);
         }
 
@@ -208,6 +216,7 @@ namespace TaiwuDate
             Print("正在输出...", false);
             foreach (JObject jo in All)
             {
+                if (jo == null) continue;
                 int id = (int?)jo["id"]??0;
                 string fileName = ParseFileName($"{Path.GetFileNameWithoutExtension(SourcePath).Split('_')[0]}/{id}.json");
                 string content = jo.ToString();
