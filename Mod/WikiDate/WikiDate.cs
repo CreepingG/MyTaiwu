@@ -847,13 +847,15 @@ namespace WikiDate
             //int num2 = (actorIsInBattle != 0 && !ActorMenu.Exists) ? BattleVaule.instance.GetDestroy(isActor, showEquipActorId, BattleSystem.instance.ActorId(!isActor), equipId, 0, 0) : BattleVaule.instance.GetWeaponDestroy(isActor, showEquipActorId, equipId, 0);
             //int num3 = (actorIsInBattle != 0 && !ActorMenu.Exists) ? BattleVaule.instance.GetDestroy(isActor, showEquipActorId, BattleSystem.instance.ActorId(!isActor), equipId, 0, 1) : BattleVaule.instance.GetWeaponDestroy(isActor, showEquipActorId, equipId, 1);
             str += $"{Util.Dit()}{array[32]}{Util.Color(20003, array[22])}{Util.Color(20006, 破体)}{Util.Cut(20002)}{Util.Color(20003, array[23])}{Util.Color(20006, 破气)}\n";
+            return str;
+            /*
             //int num4 = int.Parse(DateFile.instance.GetItemDate(equipId, 10));
             int 内伤比 = presetItem[10].ToInt();
             //int num5 = BattleVaule.instance.SetAttackMagic(showEquipActorId, equipId);
             //int num6 = num5 - num4;
             int 内功传导 = presetItem[17].ToInt();
             return str + $"{Util.Dit()}{array[34]}{Util.Color(20007, $"{内伤比}%")}（{Util.Color(10003, "内功发挥")}{Util.Color(20003, "转化")} {Util.Color(20004, 内功传导)}）\n";
-
+            */
         }
     }
 
