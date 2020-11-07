@@ -1,6 +1,0 @@
-{
-    "Lua.diagnostics.globals": [
-        "mw"
-    ],
-    "Lua.runtime.version": "Lua 5.1"
-}
