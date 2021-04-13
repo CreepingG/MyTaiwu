@@ -1,0 +1,153 @@
+<table id="form">
+	<tr>
+		<th><div>名称</div></th>
+		<td class="text-input">
+			<input id="iname" type="text" placeholder="例如：&quot;.*碎片&quot;" />
+			<span>*支持<a target="_blank" href="https://taiwu.huijiwiki.com/p/21366">正则表达式</a></span>
+		</td>
+	</tr>
+	<tr>
+		<th><div>品级</div></th>
+		<td>
+			<div style="padding:20px 0;"><input id="level" class="jrange" type="hidden" value="1,9"/></div>
+		</td>
+	</tr>
+	<tr>
+		<th><div>类型</div></th>
+		<td>
+			<ul id="type" class="filter single">
+				<li class="selected">全部</li>
+				<li target="equip">装备</li><!--额外加上随机应变三件套-->
+			</ul>
+			<ul id="equip-type" class="filter single equip">
+				<li class="selected">全部</li>
+				<li target="weapon">武器</li>
+				<li target="armor">护具</li>
+				<li target="jewel">宝物</li>
+				<li>代步</li>
+				<li>衣着</li>
+			</ul>
+			<ul id="weapon-type" class="filter multiple weapon">
+				<li>针匣</li>
+				<li>对刺</li>
+				<li>暗器</li>
+				<li>箫笛</li>
+				<li>掌套</li>
+				<li>短杵</li>
+				<li>拂尘</li>
+				<li>长鞭</li>
+				<li>剑</li>
+				<li>刀</li>
+				<li>长兵</li>
+				<li>瑶琴</li>
+				<li>神兵</li>
+				<li>随机应变</li>
+			</ul>
+			<ul id="armor-type" class="filter single armor">
+				<li class="selected">全部</li>
+				<li>头部</li>
+				<li>护体</li>
+				<li>足部</li>
+			</ul>
+		</td>
+	</tr>
+	<tr class="weapon armor jewel">
+		<th><div>材质</div></th>
+		<td>
+			<ul id="made-by" class="filter multiple">
+				<li>金铁</li>
+				<li>玉石</li>
+				<li>竹木</li>
+				<li>布帛</li>
+				<li>其他</li>
+			</ul>
+			<ul id="hardness" class="filter multiple">
+				<li>软</li>
+				<li>硬</li>
+				<li>其他</li>
+			</ul>
+		</td>
+	</tr>
+	<tr class="weapon">
+		<th><div>攻速</div></th>
+		<td>
+			<ul id="attack-speed" class="filter multiple">
+				<li>极快</li>
+				<li>较快</li>
+				<li>普通</li>
+				<li>较慢</li>
+				<li>极慢</li>
+			</ul>
+		</td>
+	</tr>
+	<tr class="weapon">
+		<th><div>招式</div></th>
+		<td>
+			<form id="attack-type" style="display:flex;align-items:center;margin-top:12px;">
+				<input type="text" readonly="readonly" placeholder="点击下方按钮以添加" style="margin-right:5px;" />
+				<button class="btn mw-ui-button mw-ui-progressive fa fa-refresh" type="button">清除</button>
+			</form>
+			<ul class="picker" target="attack-type">
+				<li>掷</li>
+				<li>弹</li>
+				<li>御</li>
+				<li>劈</li>
+				<li>刺</li>
+				<li>撩</li>
+				<li>崩</li>
+				<li>点</li>
+				<li>拿</li>
+				<li>音</li>
+				<li>缠</li>
+				<li>咒</li>
+				<li>机</li>
+				<li>毒</li>
+				<li>掷</li>
+				<li>扫</li>
+			</ul>
+		</td>
+	</tr>
+	<tr class="weapon">
+		<th><div>攻击<br />范围</div></th>
+		<td>
+			<ul id="attack-range" class="filter multiple">
+				<li>2.0</li>
+				<li>2.5</li>
+				<li>3.0</li>
+				<li>3.5</li>
+				<li>4.0</li>
+				<li>4.5</li>
+				<li>5.0</li>
+				<li>5.5</li>
+				<li>6.0</li>
+				<li>6.5</li>
+				<li>7.0</li>
+				<li>7.5</li>
+				<li>8.0</li>
+				<li>8.5</li>
+				<li>9.0</li>
+			</ul>
+			<span>*查找攻击范围能覆盖以上所有被选距离的武器</span>
+		</td>
+	</tr>
+	<tr>
+		<th><div>排序</div></th>
+		<td class="text-input">
+			<input id="sort" type="text" placeholder="例如：&quot;伤害/攻击间隔&quot;" />
+			<span>*根据此表达式，对结果排序。<a target="_blank" href="https://taiwu.huijiwiki.com/p/21373">可用的表达式</a></span>
+		</td>
+	</tr>
+	<tr>
+		<th><div>筛选</div></th>
+		<td class="text-input">
+			<input id="filter" type="text" placeholder="例如：&quot;伤害>20&quot;" />
+			<span>*根据此表达式，过滤掉不符合条件的结果。</span>
+		</td>
+	</tr>
+	<tr style="min-height:30px;">
+		<td style="flex-direction:row;">
+			<button id="submit" class="btn mw-ui-button mw-ui-progressive  fa fa-search" type="button">查询</button>
+		</td>
+	</tr>
+</table>
+<div id="result"></div>

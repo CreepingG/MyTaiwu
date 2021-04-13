@@ -1,0 +1,6 @@
+{
+    "title": "物品查询",
+    "content": ["content.html"],
+    "style": ["jRange.css", "style.css"],
+    "script": ["jRange.js", "script.js"]
+}
