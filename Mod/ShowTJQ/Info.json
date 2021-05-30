@@ -1,0 +1,8 @@
+﻿{
+  "Id": "ShowTJQ",
+  "DisplayName": "太极拳显示",
+  "Author": "东风有意",
+  "Version": "1.0.1",
+  "AssemblyName": "ShowTJQ.dll",
+  "EntryMethod": "ShowTJQ.Main.Load"
+}
