@@ -1,0 +1,11 @@
+{
+  "name": "wiki-render",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index.js && index.html"
+  },
+  "author": "",
+  "license": "ISC"
+}
