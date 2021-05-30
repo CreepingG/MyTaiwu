@@ -9,7 +9,7 @@ public class QuQuBattleSimulation
 
     public static int 反击衰减 = 5;
     
-    QuquBattler Single(int color, int part) => GetQuquWindow.instance.MakeQuqu(color, part);
+    QuquBattler Single(int color, int part) => QuquSystem.instance.MakeOne(color, part);
 
     public QuQuBattleSimulation(int color1, int part1, int color2, int part2, bool weaken)
     {
@@ -128,7 +128,7 @@ public class QuQuBattleSimulation
                 伤害 = Mathf.Max(0, 伤害 - 防守者.格挡数值);
             }
             触发反击 = (Random.Range(0, 100) < 防守者.反击率);
-            if (缠斗(我方进攻, !我方进攻, 伤害, 触发暴击, 触发格挡, 触发反击)) i = 0; //如果有过暴击，则一定还有半轮
+            if (缠斗(我方进攻, !我方进攻, 伤害, 触发暴击, 触发格挡, 触发反击)) i = 0; //如果有过反击，则一定还有半轮
             if (进攻者.IsDead || 防守者.IsDead) return;
             我方进攻 = !我方进攻; //交换半场
         }

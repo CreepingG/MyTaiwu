@@ -4,11 +4,11 @@ using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 
-class QuquData
+class QuquSystem
 {
     public Dictionary<int, Dictionary<int, string>> Source;
-    public static QuquData instance = new QuquData();
-    QuquData()
+    public static QuquSystem instance = new QuquSystem();
+    QuquSystem()
     {
         StreamReader sr = new StreamReader("Cricket_Date.txt", Encoding.UTF8);
         Source = new Dictionary<int, Dictionary<int, string>>();
@@ -27,7 +27,7 @@ class QuquData
 
     private readonly int[][][] cache = new int[10][][];
 
-    public int[][] GetAll(int level)
+    public int[][] GetAllTypes(int level)
     {
         if (cache[level] != null) return cache[level];
         if (level == 9)
@@ -50,42 +50,30 @@ class QuquData
 
         return cache[level] = colorBetter.Concat(partBetter).Concat(same).ToArray();
     }
-}
 
-public class Item:Dictionary<int, int>
-{
-    public static Dictionary<int, Item> Lib = new Dictionary<int, Item>();
-}
-
-class Items
-{
-    public static void SetItemProperty(int itemId, int key, string value)
+    public int GetData(int colorId, int partId, int index)
     {
-        if (!Item.Lib.ContainsKey(itemId))
-        {
-            Item.Lib.Add(itemId, new Item {
-                { 2001, 1 }
-            });
-        }
-        Item.Lib[itemId][key] = value.ToInt();
-    }
-}
-
-class GetQuquWindow
-{
-    static public GetQuquWindow instance = new GetQuquWindow();
-
-    public int GetQuquDate(int colorId, int partId, int index)
-    {
-        int colorValue = QuquData.instance.Source[colorId][index].ToInt();
-        int partValue = (partId > 0) ? QuquData.instance.Source[partId][index].ToInt() : 0;
-        int result =  colorValue + partValue;
+        int colorValue = Source[colorId][index].ToInt();
+        int partValue = (partId > 0) ? Source[partId][index].ToInt() : 0;
+        int result = colorValue + partValue;
         return result;
     }
-
-    public QuquBattler MakeQuqu(int colorId, int partId)
+    
+    public string GetName(int colorId, int partId)
     {
-        int maxHp = GetQuquDate(colorId, partId, 1) + GetQuquDate(colorId, partId, 11) / 20;
+        try
+        {
+            return ((partId <= 0) ? Source[colorId][0] : ((int.Parse(Source[colorId][2]) >= int.Parse(Source[partId][2])) ? (Source[colorId][0].Split('|')[0] + Source[partId][0]) : (Source[partId][0] + Source[colorId][0].Split('|')[1])));
+        }
+        catch
+        {
+            return "??";
+        }
+    }
+
+    public QuquBattler MakeOne(int colorId, int partId)
+    {
+        int maxHp = GetData(colorId, partId, 1) + GetData(colorId, partId, 11) / 20;
         maxHp += Random.Range(-(maxHp * 35 / 100), maxHp * 35 / 100 + 1);
         var item = new Item
         {
@@ -93,7 +81,7 @@ class GetQuquWindow
             [2003] = partId,
             [902] = maxHp,
             [901] = maxHp,
-            [2007] = GetQuquDate(colorId, partId, 98) * Random.Range(0, 21) / 100,
+            [2007] = GetData(colorId, partId, 98) * Random.Range(0, 21) / 100,
         };
 
         var battler = QuquBattler.Create(item);
@@ -109,40 +97,26 @@ class GetQuquWindow
     }
 }
 
-class DateFile
+public class Item:Dictionary<int, int>
 {
-    static public DateFile instance = new DateFile();
-
-    public string GetQuquName(int colorId, int partId)
+    public static Dictionary<int, Item> Lib = new Dictionary<int, Item>();
+    public T Get<T>(int index, bool other = true)
     {
-        var cricketDate = QuquData.instance.Source;
-        try
-        {
-            return ((partId <= 0) ? cricketDate[colorId][0] : ((int.Parse(cricketDate[colorId][2]) >= int.Parse(cricketDate[partId][2])) ? (cricketDate[colorId][0].Split('|')[0] + cricketDate[partId][0]) : (cricketDate[partId][0] + cricketDate[colorId][0].Split('|')[1])));
-        }
-        catch(Exception e)
-        {
-            return "??";
-        }
-    }
-
-    public T GetItemDate<T>(Item item, int index, bool other = true)
-    {
-        int value = item.ContainsKey(index) ? item[index] : 0;
+        int value = this.ContainsKey(index) ? this[index] : 0;
         string result = "";
         if (!other) return (T)Convert.ChangeType(value, typeof(T));
-        if (GetItemDate<int>(item, 2001, false) == 1)
+        if (Get<int>(2001, false) == 1)
         {
-            int colorId = item[2002];
-            int partId = item[2003];
-            var cricketDate = QuquData.instance.Source;
+            int colorId = this[2002];
+            int partId = this[2003];
+            var cricketDate = QuquSystem.instance.Source;
             switch (index)
             {
                 case 0:
-                    result = GetQuquName(colorId,partId);
+                    result = QuquSystem.instance.GetName(colorId, partId);
                     break;
                 case 8:
-                    value = GetQuquWindow.instance.GetQuquDate(colorId, partId, 1);
+                    value = QuquSystem.instance.GetData(colorId, partId, 1);
                     break;
                 case 98:
                     result = cricketDate[colorId][97];
@@ -151,41 +125,49 @@ class DateFile
                     result = ((partId > 0) ? cricketDate[partId][99] : cricketDate[colorId][99]);
                     break;
                 case 904:
-                    value = GetQuquWindow.instance.GetQuquDate(colorId, partId, 94);
+                    value = QuquSystem.instance.GetData(colorId, partId, 94);
                     break;
                 case 905:
-                    value = GetQuquWindow.instance.GetQuquDate(colorId, partId, 95);
+                    value = QuquSystem.instance.GetData(colorId, partId, 95);
                     break;
                 case 52001:
-                    value = GetQuquWindow.instance.GetQuquDate(colorId, partId, index);
+                    value = QuquSystem.instance.GetData(colorId, partId, index);
                     break;
                 case 52002:
-                    value = GetQuquWindow.instance.GetQuquDate(colorId, partId, index);
+                    value = QuquSystem.instance.GetData(colorId, partId, index);
                     break;
                 case 52003:
-                    value = GetQuquWindow.instance.GetQuquDate(colorId, partId, index);
+                    value = QuquSystem.instance.GetData(colorId, partId, index);
                     break;
                 case 52004:
-                    value = GetQuquWindow.instance.GetQuquDate(colorId, partId, index);
+                    value = QuquSystem.instance.GetData(colorId, partId, index);
                     break;
                 case 52005:
-                    value = GetQuquWindow.instance.GetQuquDate(colorId, partId, index);
+                    value = QuquSystem.instance.GetData(colorId, partId, index);
                     break;
                 case 52006:
-                    value = GetQuquWindow.instance.GetQuquDate(colorId, partId, index);
+                    value = QuquSystem.instance.GetData(colorId, partId, index);
                     break;
                 case 52007:
-                    value = GetQuquWindow.instance.GetQuquDate(colorId, partId, index);
+                    value = QuquSystem.instance.GetData(colorId, partId, index);
                     break;
             }
         }
         return (T)Convert.ChangeType(result == "" ? (object)value : (object)result, typeof(T));
     }
-
-    public int MianActorID() => 0;
+    public static void SetProperty(int itemId, int key, string value)
+    {
+        if (!Lib.ContainsKey(itemId))
+        {
+            Lib.Add(itemId, new Item {
+                { 2001, 1 }
+            });
+        }
+        Lib[itemId][key] = value.ToInt();
+    }
 }
 
-static class Utils
+static class Extension
 {
     public static int ParseInt(this string intStr)
     {
@@ -197,12 +179,12 @@ static class Utils
         {
             return Convert.ToInt32(intStr);
         }
-        catch (Exception e)
+        catch
         {
             return 0;
         }
     }
-    public static string String<T1, T2>(this Dictionary<T1,T2> dict)
+    public static string ToString<T1, T2>(this Dictionary<T1,T2> dict)
     {
         var result = "{\n";
         foreach (var kvp in dict)
@@ -246,33 +228,27 @@ static class Mathf
 
 class Writer
 {
-    FileStream File;
+    readonly FileStream stream;
 
     public Writer(string fileName, string folderName = null)
     {
         if (!string.IsNullOrWhiteSpace(folderName))
         {
-            if (!Directory.Exists(fileName)) Directory.CreateDirectory(fileName);//创建目录
+            if (!Directory.Exists(fileName)) Directory.CreateDirectory(fileName); //创建目录
             fileName = folderName + "\\" + fileName;
         }
-        File = new FileStream(fileName, FileMode.Create);
+        stream = new FileStream(fileName, FileMode.Create);
     }
 
     ~Writer()
     {
-        if (File != null) File.Close();
+        stream.Close();
     }
 
     public void WriteLine(object s)
     {
-        byte[] data = System.Text.Encoding.Default.GetBytes(s.ToString() + '\n');
-        File.Write(data, 0, data.Length);
-        File.Flush();
-    }
-
-    public void Done()
-    {
-        File.Close();
-        File = null;
+        byte[] data = Encoding.Default.GetBytes(s.ToString() + '\n');
+        stream.Write(data, 0, data.Length);
+        stream.Flush();
     }
 } 

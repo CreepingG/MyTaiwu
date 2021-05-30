@@ -9,7 +9,7 @@
         Title="促织对战模拟" Height="450" Width="800">
     <Grid>
         <TextBox x:Name="Output" HorizontalAlignment="Left" Height="183" Margin="243,59,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="379" VerticalScrollBarVisibility="Auto"/>
-        <Button x:Name="BTN" Content="开始执行" HorizontalAlignment="Left" Height="40" Margin="72,208,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click"/>
+        <Button x:Name="BTN" Content="开始执行" HorizontalAlignment="Left" Height="40" Margin="72,208,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click_Pair"/>
         <TextBox x:Name="Color1" local:PlaceholderManager.Placeholder="颜色id" HorizontalAlignment="Left" Height="20" Margin="33,59,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="75" input:InputMethod.IsInputMethodEnabled="False" PreviewTextInput="FilterInput" TextChanged="Input_TextChanged"/>
         <TextBox x:Name="Part1" local:PlaceholderManager.Placeholder="部位id" HorizontalAlignment="Left" Height="20" Margin="33,89,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="75" input:InputMethod.IsInputMethodEnabled="False" PreviewTextInput="FilterInput" TextChanged="Input_TextChanged"/>
         <TextBox x:Name="Color2" local:PlaceholderManager.Placeholder="颜色id" HorizontalAlignment="Left" Height="20" Margin="123,59,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="75" input:InputMethod.IsInputMethodEnabled="False" PreviewTextInput="FilterInput" TextChanged="Input_TextChanged"/>
@@ -18,7 +18,7 @@
         <Label x:Name="Name2" Content="名称" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="123,114,0,0" Height="30" Width="75"/>
         <TextBox x:Name="Times" local:PlaceholderManager.Placeholder="执行次数&#13;(默认为1)" HorizontalAlignment="Left" Height="34" Margin="33,149,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="75" input:InputMethod.IsInputMethodEnabled="False" PreviewTextInput="FilterInput" />
         <CheckBox x:Name="Weaken" Content="反击概率&#13;衰减" HorizontalAlignment="Left" Height="34" Margin="123,151,0,0" VerticalAlignment="Top" Width="86" IsChecked="False"/>
-        <Button Content="遍历" HorizontalAlignment="Left" Height="31" Margin="33,296,0,0" VerticalAlignment="Top" Width="165" Click="Button_Click_1"/>
+        <Button Content="遍历" HorizontalAlignment="Left" Height="31" Margin="33,296,0,0" VerticalAlignment="Top" Width="165" Click="Button_Click_All"/>
 
     </Grid>
 </Window>

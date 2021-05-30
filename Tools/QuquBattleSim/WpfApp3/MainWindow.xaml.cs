@@ -26,53 +26,60 @@ namespace WpfApp3
         {
             InitializeComponent();
         }
+
+        /// <summary>记录task中的对战结果</summary>
+        int[][] aggregate;
+        /// <summary>剩余对战次数</summary>
+        int countdown;
+        /// <summary>是否反击衰减</summary>
+        bool weaken;
+
         private void FilterInput(object sender, TextCompositionEventArgs e)
         {
             Regex re = new Regex("[^0-9.-]+");
             e.Handled = re.IsMatch(e.Text);
         }
 
-        Task MakeRepeatBattle(int color1, int part1, int color2, int part2, int times)
+        /// <summary>让两种指定蛐蛐交战</summary>
+        Task MakeSpecifiedBattle(int color1, int part1, int color2, int part2)
         {
             return Task.Run(() =>
             {
-                for (int i = 0; i < times; i++)
-                {
-                    var result = new QuQuBattleSimulation(color1, part1, color2, part2, weaken).ShowStartBattleState();
-                    var winner = result.win ? 0 : 1;
-                    lock(aggregate)
-                    {
-                        aggregate[winner][0]++;
-                        aggregate[winner][(int)result.status]++;
-                    }
-                }
-            });
-        }
-        Task MakeRandBattle(int color, int part, int[][] enemys, int times)
-        {
-            return Task.Run(() =>
-            {
+                var i = 0;
                 while (true)
                 {
-                    lock (count)
-                    {
-                        if (count[0] < times) count[0]++;
-                        else break;
-                    }
-                    var enemy = enemys[Random.Range(0, enemys.Length)];
-                    var result = new QuQuBattleSimulation(color, part, enemy[0], enemy[1], weaken).ShowStartBattleState();
-                    Interlocked.Increment(ref count[result.win ? 1 : 2]); //线程安全的+1
+                    i = Interlocked.Decrement(ref countdown);
+                    if (i < 0) break;
+
+                    var result = new QuQuBattleSimulation(color1, part1, color2, part2, weaken).ShowStartBattleState();
+                    var winner = result.win ? 0 : 1;
+
+                    Interlocked.Increment(ref aggregate[winner][0]);
+                    Interlocked.Increment(ref aggregate[winner][(int)result.status]);
                 }
             });
         }
 
-        int[][] aggregate;
-        
-        int[] count;
+        /// <summary>为一种指定蛐蛐随机选择对手交战</summary>
+        Task MakeRandomBattle(int color, int part, int[][] enemys)
+        {
+            return Task.Run(() =>
+            {
+                var i = 0;
+                while (true)
+                {
+                    i = Interlocked.Decrement(ref countdown);
+                    if (i < 0) break;
 
-        bool weaken;
+                    var enemy = enemys[Random.Range(0, enemys.Length)];
+                    var result = new QuQuBattleSimulation(color, part, enemy[0], enemy[1], weaken).ShowStartBattleState();
+
+                    Interlocked.Increment(ref aggregate[0][result.win ? 0 : 1]);
+                }
+            });
+        }
         
-        private async void Button_Click(object sender, RoutedEventArgs e)
+        private async void Button_Click_Pair(object sender, RoutedEventArgs e)
         {
             var color1 = Color1.Text.ToInt();
             var part1 = Part1.Text.ToInt();
@@ -94,29 +101,30 @@ namespace WpfApp3
                 BTN.IsEnabled = false;
                 aggregate = new int[][] { new int[5], new int[5] };
                 var taskCount = Environment.ProcessorCount; //4
-                var tasks = new Task[taskCount]; 
+                var tasks = new Task[taskCount];
+                countdown = times;
                 for (int i=0; i < taskCount; i++)
                 {
-                    tasks[i] = MakeRepeatBattle(color1, part1, color2, part2, times / taskCount);
+                    tasks[i] = MakeSpecifiedBattle(color1, part1, color2, part2);
                 }
                 await Task.WhenAll(tasks);
                 var messages = new string[]
                 {
-                    $"{DateFile.instance.GetQuquName(color1, part1)} {ReasonAnalysis(aggregate[0])}",
-                    $"{DateFile.instance.GetQuquName(color2, part2)} {ReasonAnalysis(aggregate[1])}",
+                    $"{QuquSystem.instance.GetName(color1, part1)} {ReasonAnalysis(aggregate[0])}",
+                    $"{QuquSystem.instance.GetName(color2, part2)} {ReasonAnalysis(aggregate[1])}",
                     ""
                 };
-                var w = new Writer("test.txt");
+                var w = new Writer("logs.txt");
                 foreach (var message in messages)
                 {
                     Print(message);
                     w.WriteLine(message);
                 }
-                w.Done();
                 BTN.Content = "开始执行";
                 BTN.IsEnabled = true;
             }
         }
+        
         private string ReasonAnalysis(int[] data)
         {
             if (data[0] == 0)
@@ -134,7 +142,8 @@ namespace WpfApp3
             }
             return $"{data[0]}({s})";
         }
-        private async void Button_Click_1(object sender, RoutedEventArgs e)
+        
+        private async void Button_Click_All(object sender, RoutedEventArgs e)
         {
             var times = Times.Text.ToInt();
             if (times <= 1)
@@ -148,31 +157,33 @@ namespace WpfApp3
             var taskCount = Environment.ProcessorCount; //4
             var tasks = new Task[taskCount];
 
-            var w = new Writer("test.txt");
+            var w = new Writer("logs.txt");
             var cnt = 0;
             for (var mainLevel = 1; mainLevel <= 9; mainLevel++)
             {
-                foreach (var mainQuqu in QuquData.instance.GetAll(mainLevel))
+                foreach (var mainQuqu in QuquSystem.instance.GetAllTypes(mainLevel))
                 {
                     var rate = "";
                     for (var enemyLevel = 1; enemyLevel <= 9; enemyLevel++)
                     {
-                        count = new int[3];
+                        countdown = times;
+                        aggregate = new int[][] { new int[2] };
                         for (int i = 0; i < taskCount; i++)
                         {
-                            tasks[i] = MakeRandBattle(mainQuqu[0], mainQuqu[1], QuquData.instance.GetAll(enemyLevel), times);
+                            tasks[i] = MakeRandomBattle(mainQuqu[0], mainQuqu[1], QuquSystem.instance.GetAllTypes(enemyLevel));
                         }
                         await Task.WhenAll(tasks);
-                        rate += $"{count[1] * 10000 / (count[1] + count[2])}|";
-                        if (enemyLevel == 1) Print($"{++cnt} {DateFile.instance.GetQuquName(mainQuqu[0], mainQuqu[1])}", false);
-                        Print($"{enemyLevel}: {count[1]} / {count[1] + count[2]}"); //百分比，保留一位小数，向下取整
+                        var win0 = aggregate[0][0];
+                        var win1 = aggregate[0][1];
+                        rate += $"{win0 * 10000 / (win0 + win1)}|";
+                        if (enemyLevel == 1) Print($"{++cnt} {QuquSystem.instance.GetName(mainQuqu[0], mainQuqu[1])}", false);
+                        Print($"{enemyLevel}: {win0} / {win0 + win1}"); //百分比，保留一位小数，向下取整
                     }
-                    var line = $"{DateFile.instance.GetQuquName(mainQuqu[0], mainQuqu[1])},{mainQuqu[0]},{mainQuqu[1]},{rate}";//csv格式输出
+                    var line = $"{QuquSystem.instance.GetName(mainQuqu[0], mainQuqu[1])},{mainQuqu[0]},{mainQuqu[1]},{rate}";//csv格式输出
                     //Print(line);
                     w.WriteLine(line);
                 }
             }
-            w.Done();
             BTN.Content = "开始执行";
             BTN.IsEnabled = true;
             return;
@@ -182,8 +193,8 @@ namespace WpfApp3
         {
             if(int.TryParse(((TextBox)e.Source).Text, out int i))
             {
-                Name1.Content = DateFile.instance.GetQuquName(Color1.Text.ToInt(), Part1.Text.ToInt());
-                Name2.Content = DateFile.instance.GetQuquName(Color2.Text.ToInt(), Part2.Text.ToInt());
+                Name1.Content = QuquSystem.instance.GetName(Color1.Text.ToInt(), Part1.Text.ToInt());
+                Name2.Content = QuquSystem.instance.GetName(Color2.Text.ToInt(), Part2.Text.ToInt());
             }
         }
 

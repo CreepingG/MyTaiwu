@@ -54,26 +54,26 @@
         QuquBattler result = new QuquBattler
         {
             Status = BattlerStatus.存活,
-            Hp = GetQuquWindow.instance.GetQuquDate(colorId, partId, 11),
-            MaxHp = GetQuquWindow.instance.GetQuquDate(colorId, partId, 11),
-            Sp = GetQuquWindow.instance.GetQuquDate(colorId, partId, 12),
-            MaxSp = GetQuquWindow.instance.GetQuquDate(colorId, partId, 12),
-            Level = DateFile.instance.GetItemDate<int>(item, 8),
-            ColorId = DateFile.instance.GetItemDate<int>(item, 2002),
-            PartId = DateFile.instance.GetItemDate<int>(item, 2003),
-            气势 = GetQuquWindow.instance.GetQuquDate(colorId, partId, 21),
-            角力 = GetQuquWindow.instance.GetQuquDate(colorId, partId, 22),
-            牙钳 = GetQuquWindow.instance.GetQuquDate(colorId, partId, 23),
-            暴击率 = GetQuquWindow.instance.GetQuquDate(colorId, partId, 31),
-            暴击增伤 = GetQuquWindow.instance.GetQuquDate(colorId, partId, 32),
-            击伤调整 = GetQuquWindow.instance.GetQuquDate(colorId, partId, 36),
-            格挡率 = GetQuquWindow.instance.GetQuquDate(colorId, partId, 33),
-            格挡数值 = GetQuquWindow.instance.GetQuquDate(colorId, partId, 34),
-            反击率 = GetQuquWindow.instance.GetQuquDate(colorId, partId, 35),
-            Durability = DateFile.instance.GetItemDate<int>(item, 901),
-            MaxDurability = DateFile.instance.GetItemDate<int>(item, 902),
-            Name = DateFile.instance.GetQuquName(colorId, partId),
-    };
+            Hp = QuquSystem.instance.GetData(colorId, partId, 11),
+            MaxHp = QuquSystem.instance.GetData(colorId, partId, 11),
+            Sp = QuquSystem.instance.GetData(colorId, partId, 12),
+            MaxSp = QuquSystem.instance.GetData(colorId, partId, 12),
+            Level = item.Get<int>(8),
+            ColorId = item.Get<int>(2002),
+            PartId = item.Get<int>(2003),
+            气势 = QuquSystem.instance.GetData(colorId, partId, 21),
+            角力 = QuquSystem.instance.GetData(colorId, partId, 22),
+            牙钳 = QuquSystem.instance.GetData(colorId, partId, 23),
+            暴击率 = QuquSystem.instance.GetData(colorId, partId, 31),
+            暴击增伤 = QuquSystem.instance.GetData(colorId, partId, 32),
+            击伤调整 = QuquSystem.instance.GetData(colorId, partId, 36),
+            格挡率 = QuquSystem.instance.GetData(colorId, partId, 33),
+            格挡数值 = QuquSystem.instance.GetData(colorId, partId, 34),
+            反击率 = QuquSystem.instance.GetData(colorId, partId, 35),
+            Durability = item.Get<int>(901),
+            MaxDurability = item.Get<int>(902),
+            Name = QuquSystem.instance.GetName(colorId, partId),
+        };
         return result;
     }
 
@@ -113,7 +113,8 @@
         get => Status != BattlerStatus.存活;
     }
 
-    public BattlerStatus Status;//死因
+    /// <summary>存活|死因</summary>
+    public BattlerStatus Status;
 
     public string Name;
 
