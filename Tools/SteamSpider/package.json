@@ -1,0 +1,17 @@
+{
+  "name": "steamspider",
+  "version": "1.0.0",
+  "description": "从steam爬取太吾的更新日志",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "jquery": "^3.5.0",
+    "jsdom": "^16.2.2",
+    "request": "^2.88.2",
+    "request-promise": "^4.2.5"
+  }
+}
