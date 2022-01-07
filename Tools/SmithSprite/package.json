@@ -1,0 +1,22 @@
+{
+  "name": "smith-sprite",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "sprite-css": "gulp sprite-css",
+    "sprite-json": "gulp sprite-json"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "gulp": "^4.0.2",
+    "gulp-csso": "^4.0.1",
+    "gulp-imagemin": "^8.0.0",
+    "gulp-webp": "^4.0.1",
+    "gulp.spritesmith": "^6.12.1",
+    "merge-stream": "^2.0.0",
+    "vinyl-buffer": "^1.0.1"
+  }
+}
