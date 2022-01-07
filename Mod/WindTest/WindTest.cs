@@ -94,11 +94,11 @@ namespace WindTest
             settings.maxWeight = GUILayout.Toggle(settings.maxWeight, "最大负重");
             settings.ignoreEvents = GUILayout.Toggle(settings.ignoreEvents, "无视时节开始的乞讨事件");
             settings.ignoreCreepings = GUILayout.Toggle(settings.ignoreCreepings, "自动驱逐外道（不打断移动）");
-            if (GUILayout.Button("弃婴")) TestAction.TraceChildren();
+            if (GUILayout.Button("紫竹化身")) TestAction.MakeJuniorXX();
             GUILayout.EndHorizontal();
-            /*GUILayout.BeginHorizontal();
+            GUILayout.BeginHorizontal();
             settings.input = GUILayout.TextField(settings.input);
-            GUILayout.EndHorizontal();*/
+            GUILayout.EndHorizontal();
 
             if (DateFile.instance != null && DateFile.instance.mianActorId > 0)
             {
@@ -478,6 +478,35 @@ namespace WindTest
             {
                 Main.Logger.Log($"{kvp.Key}::{kvp.Value * 100 / sum}%");
             }
+        }
+
+        public static void MakeJuniorXX()
+        {
+            var aggr = new DefaultDictionary<int, int>();
+            var id = (int.TryParse(Main.settings.input, out int num) ? num : 1) + 1500;
+            DateFile.instance.xxChildrenAtPlace[id] = new int[2]
+            {
+                DateFile.instance.mianPartId,
+                DateFile.instance.mianPlaceId
+            };
+            v2.JuniorXiangshuSystem instance = SingletonObject.getInstance<v2.JuniorXiangshuSystem>();
+            int juniorXiangshuIdByPresetActorId = instance.GetJuniorXiangshuIdByPresetActorId(id);
+            if (juniorXiangshuIdByPresetActorId < 0)
+            {
+                throw new Exception("MassageWindow.EndEvent2347_1: Invalid juniorXiangshuId.");
+            }
+            instance.Activate(juniorXiangshuIdByPresetActorId);
+            if (DateFile.instance.gameLine == 104)
+            {
+                DateFile.instance.SetGameLine(105);
+                DateFile.instance.SetEvent(new int[3]
+                {
+                0,
+                -1,
+                1354
+                }, addToFirst: true);
+            }
+            WorldMapSystem.instance.UpdatePlaceActor(DateFile.instance.mianPartId, DateFile.instance.mianPlaceId);
         }
 
         public static void MakeChilrenAlone()
@@ -863,5 +892,51 @@ namespace WindTest
             }
 
         }
+
+        // 监测数据
+        [HarmonyPatch(typeof(v2.SpecialEffectSystem), "ModifyData")]
+        [HarmonyPatch(new Type[] { typeof(v2.DataUid), typeof(List<int>), typeof(int) })]
+        class WindTest_ModifyData_Patch
+        {
+            static void Postfix(ref int __result, v2.DataUid dataUid, List<int> dataValue, int characterId = -1)
+            {
+                if (!Main.enabled) return;
+                if (dataUid.domain==DataDomain.GongfaData && dataUid.id1 == 236)
+                {
+                    Main.Say(Util.GetActorName(characterId));
+                    Main.Say(__result);
+                }
+            }
+        }
+
+        // 玄狱九老
+        [HarmonyPatch(typeof(BattleSystem), "GetGongFaFEffect")]
+        class WindTest_GetGongFaFEffect_Patch
+        {
+            static bool Prefix(BattleSystem __instance, int effectId, bool isActor, ref bool __result)
+            {
+                if (!Main.enabled) return true;
+                if (effectId == 20009 && isActor)
+                {
+                    Util.Show("玄狱九老");
+                    __result = true;
+                    return false;
+                }
+                return true;
+            }
+        }
+        [HarmonyPatch(typeof(BattleSystem), "GetEnemy")]
+        class WindTest_GetEnemy_Patch
+        {
+            static void Postfix(BattleSystem __instance, bool newBattle)
+            {
+                if (!Main.enabled) return;
+                foreach (var kvp in __instance.enemyGongFaSp)
+                {
+                    __instance.actorGongFaSp.Add(kvp.Key, kvp.Value);
+                }
+                
+            }
+        }   
     }
 }
