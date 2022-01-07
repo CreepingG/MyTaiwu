@@ -66,6 +66,10 @@ namespace TaiwuDate
                 var arr = name.Split(new string[] { "\\n" }, StringSplitOptions.RemoveEmptyEntries);
                 name = arr.Last();
             }
+            else if (name == "白鹿角")
+            {
+                name += "(" + (id == 35 ? "武林大会" : "对刺") + ")";
+            }
             return name;
         }
 
